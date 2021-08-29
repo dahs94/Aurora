@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="default_text">
+        <item name="android:fontFamily">@font/lato</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:textColor">@color/text_branding</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+    </style>
+
+    <style name="default_heading">
+        <item name="android:fontFamily">@font/lato</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:textColor">@color/header_branding</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+    </style>
+
+    <style name="SOS_text">
+        <item name="android:fontFamily">@font/lato</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:textSize">34sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+</resources>
