@@ -18,11 +18,13 @@ import timber.log.Timber
  * system-wide events
  */
 class WiFiDirectBroadcastReceiver(
-    private val manager: WifiP2pManager,
-    private val channel: WifiP2pManager.Channel,
+    private val wManager: WifiP2pManager,
+    private val wChannel: WifiP2pManager.Channel,
     private val activity: DiscoveryActivity
 ) : BroadcastReceiver() {
     /**we must override this, because BroadcastReceiver is an abstract class**/
+
+    var peers: WifiP2pDeviceList = WifiP2pDeviceList()
 
     @SuppressLint("MissingPermission")
     override fun onReceive(context: Context, intent: Intent) {
@@ -31,10 +33,7 @@ class WiFiDirectBroadcastReceiver(
                 //Check to see if Wi-Fi is enabled and notify appropriate activity
             }
             WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
-                Timber.i("P2P_CHANGED intent triggered")
-                manager?.requestPeers(channel) {
-                        peers: WifiP2pDeviceList? -> Timber.i("$peers")
-                }
+                wManager.requestPeers(wChannel, activity.peerListener)
             }
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
                 // Respond to new connection or disconnections

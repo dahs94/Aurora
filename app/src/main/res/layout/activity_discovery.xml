@@ -1,47 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/find_devices_layout"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/discovery_activity_RL"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".DiscoveryActivity">
+    android:layout_marginTop="@dimen/margin_wide"
+    android:orientation="vertical">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/discoveryTipTextView"
+        style="@style/default_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Here is where our list will go"
-        app:layout_constraintBottom_toTopOf="@+id/find_devices_magnifying_glass"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="@dimen/margin_wide"
+        android:text="@string/discovery_tip"
+        android:textAlignment="center" />
+
+    <ListView
+        android:id="@+id/search_listview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/find_devices_magnifying_glass"
+        android:layout_below="@id/discoveryTipTextView" />
 
     <ImageButton
         android:id="@+id/find_devices_magnifying_glass"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_above="@id/back_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_wide"
+        android:layout_marginBottom="@dimen/margin_wide"
         android:background="#0000"
         android:contentDescription="@string/find_devices_magnifying_glass_content_description"
-        android:src="@drawable/ic_magnifying_glass"
-        app:layout_constraintBottom_toTopOf="@+id/back_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        android:src="@drawable/ic_magnifying_glass" />
 
     <Button
         android:id="@+id/back_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/back_button"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/find_devices_magnifying_glass" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="@dimen/margin_wide"
+        android:text="@string/back_button" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

@@ -11,4 +11,5 @@
     <string name="find_devices">Find Devices</string>
     <string name="home">Home</string>
     <string name="search">Find by name</string>
+    <string name="discovery_tip">Press the magnifying glass to search</string>
 </resources>
