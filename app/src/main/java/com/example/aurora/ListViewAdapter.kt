@@ -1,0 +1,44 @@
+package com.example.aurora
+
+import android.content.Context
+import android.net.wifi.p2p.WifiP2pDevice
+import android.net.wifi.p2p.WifiP2pDeviceList
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.TextView
+import org.w3c.dom.Text
+
+class ListViewAdapter(context: Context, deviceList: MutableList<WifiP2pDevice>) : BaseAdapter() {
+
+    /**Sets number of rows**/
+    private val mContext: Context = context
+    private val mDeviceList: MutableList<WifiP2pDevice> = deviceList
+
+    override fun getCount(): Int {
+        return mDeviceList.size
+    }
+
+    /**Sets view for each row**/
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+        val layoutInflater: LayoutInflater = LayoutInflater.from(mContext)
+        val rowView: View = layoutInflater.inflate(R.layout.listview_row, parent, false)
+
+        val nameTextView: TextView = rowView.findViewById(R.id.device_name_header)
+        val typeTextView: TextView = rowView.findViewById(R.id.device_type_header)
+
+        nameTextView.text = mDeviceList[position].deviceName
+        typeTextView.text = mDeviceList[position].primaryDeviceType
+
+        return rowView
+    }
+
+    override fun getItem(position: Int): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun getItemId(position: Int): Long {
+        TODO("Not yet implemented")
+    }
+}

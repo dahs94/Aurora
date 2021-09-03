@@ -5,9 +5,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Bundle
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 
@@ -19,6 +21,7 @@ class DiscoveryActivity : AppCompatActivity() {
     private lateinit var wReceiver: BroadcastReceiver
     lateinit var peerListener: WifiP2pManager.PeerListListener
     private val intentFilter: IntentFilter = IntentFilter()
+    private val p2pDeviceList: MutableList<WifiP2pDevice> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +46,7 @@ class DiscoveryActivity : AppCompatActivity() {
     private fun initListeners() {
         val findDevicesButton: ImageButton = findViewById(R.id.find_devices_magnifying_glass)
         findDevicesButton.setOnClickListener {
+            p2pDeviceList.clear()
             discoverWiFiDevices()
         }
 
@@ -58,21 +62,34 @@ class DiscoveryActivity : AppCompatActivity() {
 
     @SuppressLint("MissingPermission")
     private fun discoverWiFiDevices() {
-        val textView: TextView = findViewById(R.id.discoveryTipTextView)
+        val discoveryTipTextView: TextView = findViewById(R.id.discoveryTipTextView)
         wManager.discoverPeers(wChannel, object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
-                textView.text = "Peer discovery started..."
+                discoveryTipTextView.text = "Peer discovery started..."
 
             }
             override fun onFailure(reasonCode: Int) {
-                textView.text = "Peer discovery failed: $reasonCode"
+                discoveryTipTextView.text = "Peer discovery failed: $reasonCode"
             }
         })
+
     }
 
+    /**This will be called each time a new device is found, so we need to handle
+     * the list correctly when a new device is added, this is why we set p2p device
+     * list as a field in the class and not as a local variable in the function**/
     private fun onPeersAvailable(deviceList: WifiP2pDeviceList) {
+        val listView: ListView = findViewById(R.id.search_listview)
         for (device in deviceList.deviceList) {
-            //to do
+            p2pDeviceList.add(device)
+        }
+        listView.adapter = ListViewAdapter(this, p2pDeviceList)
+
+        if(p2pDeviceList.isEmpty()) {
+           val noDevicesTextView: TextView = findViewById(R.id.noDevicesTextView)
+           val discoveryTipTextView: TextView = findViewById(R.id.discoveryTipTextView)
+           noDevicesTextView.visibility = View.VISIBLE
+           discoveryTipTextView.text = getString(R.string.discovery_tip)
         }
     }
 
@@ -85,5 +102,4 @@ class DiscoveryActivity : AppCompatActivity() {
         super.onPause()
         unregisterReceiver(wReceiver)
     }
-
 }

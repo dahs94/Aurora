@@ -19,6 +19,16 @@
         android:text="@string/discovery_tip"
         android:textAlignment="center" />
 
+    <TextView
+        android:id="@+id/noDevicesTextView"
+        style="@style/default_heading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="No devices found :("
+        android:textAlignment="center"
+        android:visibility="gone" />
+
     <ListView
         android:id="@+id/search_listview"
         android:layout_width="match_parent"

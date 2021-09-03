@@ -14,7 +14,7 @@
         <item name="android:fontFamily">@font/lato</item>
         <item name="android:textAlignment">center</item>
         <item name="android:textColor">@color/header_branding</item>
-        <item name="android:textSize">30sp</item>
+        <item name="android:textSize">25sp</item>
         <item name="android:paddingLeft">8dp</item>
         <item name="android:paddingRight">8dp</item>
     </style>
