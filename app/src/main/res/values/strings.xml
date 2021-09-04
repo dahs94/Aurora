@@ -12,4 +12,11 @@
     <string name="home">Home</string>
     <string name="search">Find by name</string>
     <string name="discovery_tip">Press the magnifying glass to search</string>
+    <string name="discovery_tip_fin">Search finished. Press to search again.</string>
+    <string name="connected_to">Currently connected to:</string>
+    <string name="device_name">None</string>
+    <string name="peer_discovery">Peer discovery started. Select a device below
+        to connect with. </string>
+    <string name="peer_discovery_failed">Peer discovery failed: %1$s</string>
+    <string name="no_devices">No devices found… :(</string>
 </resources>

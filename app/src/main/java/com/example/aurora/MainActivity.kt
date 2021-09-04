@@ -14,9 +14,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        initListeners()
         checkForPermissions()
+    }
 
-        //access resource, create intent & start activity using intent
+    //access resource, create intent & start activity using intent
+    private fun initListeners() {
         val findDevicesButton: Button = findViewById(R.id.find_devices_button)
         findDevicesButton.setOnClickListener {
             startActivity(Intent(this, DiscoveryActivity::class.java))

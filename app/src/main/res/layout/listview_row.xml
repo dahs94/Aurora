@@ -7,7 +7,7 @@
 
     <TextView
         android:id="@+id/device_name_header"
-        style="@style/default_heading"
+        style="@style/row_heading1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -23,7 +23,7 @@
 
     <TextView
         android:id="@+id/device_type_header"
-        style="@style/default_text"
+        style="@style/row_heading2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"

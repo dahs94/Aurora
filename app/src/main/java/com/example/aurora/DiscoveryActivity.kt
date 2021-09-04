@@ -58,6 +58,13 @@ class DiscoveryActivity : AppCompatActivity() {
         peerListener = WifiP2pManager.PeerListListener() {
             onPeersAvailable(it)
         }
+
+        val listView: ListView = findViewById(R.id.search_listview)
+        listView.setOnItemClickListener { parent, view, position, id ->
+            val selectedItem = parent.getItemAtPosition(position)
+            val toast: Toast = Toast.makeText(this, "Selected: $selectedItem", Toast.LENGTH_LONG)
+            toast.show()
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -65,31 +72,37 @@ class DiscoveryActivity : AppCompatActivity() {
         val discoveryTipTextView: TextView = findViewById(R.id.discoveryTipTextView)
         wManager.discoverPeers(wChannel, object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
-                discoveryTipTextView.text = "Peer discovery started..."
+                discoveryTipTextView.text = getString(R.string.peer_discovery)
 
             }
             override fun onFailure(reasonCode: Int) {
-                discoveryTipTextView.text = "Peer discovery failed: $reasonCode"
+                discoveryTipTextView.text = String.format(getString(R.string.peer_discovery_failed),
+                    reasonCode)
             }
         })
-
     }
 
     /**This will be called each time a new device is found, so we need to handle
      * the list correctly when a new device is added, this is why we set p2p device
      * list as a field in the class and not as a local variable in the function**/
     private fun onPeersAvailable(deviceList: WifiP2pDeviceList) {
-        val listView: ListView = findViewById(R.id.search_listview)
-        for (device in deviceList.deviceList) {
-            p2pDeviceList.add(device)
+        if (deviceList != p2pDeviceList)
+        {
+            p2pDeviceList.clear()
+            for (device in deviceList.deviceList) {
+                p2pDeviceList.add(device)
+            }
         }
+
+        val listView: ListView = findViewById(R.id.search_listview)
         listView.adapter = ListViewAdapter(this, p2pDeviceList)
 
         if(p2pDeviceList.isEmpty()) {
            val noDevicesTextView: TextView = findViewById(R.id.noDevicesTextView)
            val discoveryTipTextView: TextView = findViewById(R.id.discoveryTipTextView)
+           listView.removeAllViews()
            noDevicesTextView.visibility = View.VISIBLE
-           discoveryTipTextView.text = getString(R.string.discovery_tip)
+           discoveryTipTextView.text = getString(R.string.discovery_tip_fin)
         }
     }
 

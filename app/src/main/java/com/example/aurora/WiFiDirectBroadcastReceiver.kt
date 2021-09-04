@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pManager
+import android.widget.Toast
 import timber.log.Timber
 
 /**
@@ -30,7 +31,15 @@ class WiFiDirectBroadcastReceiver(
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> {
-                //Check to see if Wi-Fi is enabled and notify appropriate activity
+                val wifiState: Int = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1)
+                if (wifiState == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
+                    //Wi-Fi Direct is enabled
+                }
+                else {
+                    val toast: Toast = Toast.makeText(context, "Wi-Fi Direct is disabled. " +
+                            "Please enable it in settings.", Toast.LENGTH_LONG)
+                    toast.show()
+                }
             }
             WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
                 wManager.requestPeers(wChannel, activity.peerListener)

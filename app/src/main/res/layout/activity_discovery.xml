@@ -25,9 +25,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="No devices found :("
+        android:text="@string/no_devices"
         android:textAlignment="center"
-        android:visibility="gone" />
+        android:visibility="invisible" />
 
     <ListView
         android:id="@+id/search_listview"
