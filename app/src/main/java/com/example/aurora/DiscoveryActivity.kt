@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import timber.log.Timber
 
 
 class DiscoveryActivity : AppCompatActivity() {
@@ -61,9 +62,14 @@ class DiscoveryActivity : AppCompatActivity() {
 
         val listView: ListView = findViewById(R.id.search_listview)
         listView.setOnItemClickListener { parent, view, position, id ->
-            val selectedItem = parent.getItemAtPosition(position)
-            val toast: Toast = Toast.makeText(this, "Selected: $selectedItem", Toast.LENGTH_LONG)
-            toast.show()
+            val selectedItem: WifiP2pDevice = parent.getItemAtPosition(position) as WifiP2pDevice
+            var bundle: Bundle = Bundle()
+            bundle.putString("DEVICE_NAME", selectedItem.deviceName)
+            bundle.putString("DEVICE_ADDRESS", selectedItem.deviceAddress)
+            //bundle.putBoolean("DEVICE_SELECTED", true)
+            val intent: Intent = Intent(this, MainActivity::class.java)
+            intent.putExtras(bundle)
+            startActivity(Intent(intent))
         }
     }
 

@@ -12,10 +12,10 @@ import org.w3c.dom.Text
 
 class ListViewAdapter(context: Context, deviceList: MutableList<WifiP2pDevice>) : BaseAdapter() {
 
-    /**Sets number of rows**/
     private val mContext: Context = context
     private val mDeviceList: MutableList<WifiP2pDevice> = deviceList
 
+    /**Sets number of rows**/
     override fun getCount(): Int {
         return mDeviceList.size
     }
@@ -29,16 +29,18 @@ class ListViewAdapter(context: Context, deviceList: MutableList<WifiP2pDevice>) 
         val typeTextView: TextView = rowView.findViewById(R.id.device_type_header)
 
         nameTextView.text = mDeviceList[position].deviceName
-        typeTextView.text = mDeviceList[position].primaryDeviceType
+        typeTextView.text = mDeviceList[position].deviceAddress
 
         return rowView
     }
 
+    /**Returns list item at selected position**/
     override fun getItem(position: Int): Any {
-        TODO("Not yet implemented")
+        return mDeviceList[position]
     }
 
+    /**Gets the ID for the item, e.g. 1, 2, 3 etc.**/
     override fun getItemId(position: Int): Long {
-        TODO("Not yet implemented")
+        return position.toLong()
     }
 }
