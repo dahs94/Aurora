@@ -2,11 +2,13 @@ package com.example.aurora
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.wifi.p2p.WifiP2pConfig
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import timber.log.Timber
@@ -25,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         initListeners()
         checkForPermissions()
-        handleConnectedDevice(deviceName, deviceAddress) //deviceSelected)
+        handleConnectedDevice(deviceName, deviceAddress)
     }
 
     //access resource, create intent & start activity using intent
@@ -56,12 +58,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>,
-                                            grantResults: IntArray)
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray)
     {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
             Timber.i("Location permission denied")
+            val toast: Toast = Toast.makeText(this, "The LOCATION permission must" +
+                    "be granted for this app", Toast.LENGTH_LONG)
+            toast.show()
+            checkForPermissions()
         }
         else {
             Timber.i("Location permission granted")
@@ -69,22 +75,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleConnectedDevice(
-        deviceName: String?, deviceAddress: String?){ //deviceSelected: Boolean)
-
+        deviceName: String?, deviceAddress: String?){
         if (deviceName != null) {
             val devNameTextView: TextView = findViewById(R.id.device_name_textview)
             devNameTextView.text = deviceName
         }
-
-        /** if (deviceSelected == true) {
-        val wifiPeer: WifiP2pConfig = WifiP2pConfig()
-        wifiPeer.deviceAddress = deviceAddress
-
-        /*for now, make this device GO. Studies show that autonomous mode is faster
-        for group creation. Right now, we're imitating a point to point connection
-        with one device*/
-        wifiPeer.groupOwnerIntent = 15} **/
-
-        TODO("Pass boolean bundle arg & connect to peer")
     }
 }

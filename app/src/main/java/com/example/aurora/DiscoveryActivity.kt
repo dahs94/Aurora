@@ -1,19 +1,21 @@
 package com.example.aurora
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.wifi.p2p.WifiP2pDevice
-import android.net.wifi.p2p.WifiP2pDeviceList
-import android.net.wifi.p2p.WifiP2pManager
+import android.content.pm.PackageManager
+import android.net.wifi.p2p.*
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import timber.log.Timber
-
 
 class DiscoveryActivity : AppCompatActivity() {
 
@@ -21,8 +23,10 @@ class DiscoveryActivity : AppCompatActivity() {
     private lateinit var wChannel: WifiP2pManager.Channel
     private lateinit var wReceiver: BroadcastReceiver
     lateinit var peerListener: WifiP2pManager.PeerListListener
+    lateinit var connectionListener: WifiP2pManager.ConnectionInfoListener
     private val intentFilter: IntentFilter = IntentFilter()
     private val p2pDeviceList: MutableList<WifiP2pDevice> = mutableListOf()
+    private var groupCreated: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,16 +64,14 @@ class DiscoveryActivity : AppCompatActivity() {
             onPeersAvailable(it)
         }
 
+        connectionListener = WifiP2pManager.ConnectionInfoListener {
+            onConnectionAvailable(it)
+        }
+
         val listView: ListView = findViewById(R.id.search_listview)
         listView.setOnItemClickListener { parent, view, position, id ->
             val selectedItem: WifiP2pDevice = parent.getItemAtPosition(position) as WifiP2pDevice
-            var bundle: Bundle = Bundle()
-            bundle.putString("DEVICE_NAME", selectedItem.deviceName)
-            bundle.putString("DEVICE_ADDRESS", selectedItem.deviceAddress)
-            //bundle.putBoolean("DEVICE_SELECTED", true)
-            val intent: Intent = Intent(this, MainActivity::class.java)
-            intent.putExtras(bundle)
-            startActivity(Intent(intent))
+            onDeviceSelected(selectedItem)
         }
     }
 
@@ -109,6 +111,66 @@ class DiscoveryActivity : AppCompatActivity() {
            listView.removeAllViews()
            noDevicesTextView.visibility = View.VISIBLE
            discoveryTipTextView.text = getString(R.string.discovery_tip_fin)
+        }
+    }
+
+    private fun onConnectionAvailable(groupInfo: WifiP2pInfo){
+        if (groupInfo.groupFormed) groupCreated = true
+    }
+
+    private fun connectPeer(deviceSelected: WifiP2pDevice) {
+        val deviceName: String = deviceSelected.deviceName
+        val wifiPeerConfig: WifiP2pConfig = WifiP2pConfig()
+        wifiPeerConfig.deviceAddress = deviceSelected.deviceAddress
+
+        /*for now, make this device GO. Studies show that autonomous mode is faster
+        for group creation (Oide et al). Right now, we're imitating a point to point
+        connection with one device*/
+        wifiPeerConfig.groupOwnerIntent = 15
+
+        //Permission check
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED) {
+            //Connect to peer
+            wManager.connect(wChannel, wifiPeerConfig, object : WifiP2pManager.ActionListener {
+                override fun onSuccess() {
+                    Timber.i("Connection to $deviceName initiated")
+                }
+
+                override fun onFailure(reason: Int) {
+                    val toast: Toast = Toast.makeText(DiscoveryActivity(),
+                        "Connection to $deviceName failed: $reason",
+                        Toast.LENGTH_LONG)
+                    toast.show()
+                    }
+                })
+        }
+        else {
+            val toast: Toast = Toast.makeText(this,
+                "The LOCATION permission must be granted for Aurora to work.",
+                Toast.LENGTH_LONG)
+            toast.show()
+        }
+    }
+
+    private fun onDeviceSelected(selectedItem: WifiP2pDevice) {
+        //Connect to device
+        connectPeer(selectedItem)
+
+        //Navigate to MainActivity & pass device details if connection successful
+        if (groupCreated){
+            val bundle: Bundle = Bundle()
+            bundle.putString("DEVICE_NAME", selectedItem.deviceName)
+            bundle.putString("DEVICE_ADDRESS", selectedItem.deviceAddress)
+            //bundle.putBoolean("DEVICE_SELECTED", true)
+            val intent: Intent = Intent(this, MainActivity::class.java)
+            intent.putExtras(bundle)
+            startActivity(Intent(intent))
+        }
+        else {
+            val toast: Toast = Toast.makeText(applicationContext,
+                "Connection failed, could not form group", Toast.LENGTH_LONG)
+            toast.show()
         }
     }
 
