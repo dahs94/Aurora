@@ -33,7 +33,7 @@ class WiFiDirectBroadcastReceiver(
             WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> {
                 val wifiState: Int = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1)
                 if (wifiState == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
-                    //Wi-Fi Direct is enabled
+                    //Wi-Fi Direct is enabled. Nothing to do here.
                 }
                 else {
                     val toast: Toast = Toast.makeText(context, "Wi-Fi Direct is disabled. " +
@@ -45,6 +45,7 @@ class WiFiDirectBroadcastReceiver(
                 wManager.requestPeers(wChannel, activity.peerListener)
             }
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
+                wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
                 wManager.requestConnectionInfo(wChannel, activity.connectionListener)
             }
             WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {

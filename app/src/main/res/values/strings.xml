@@ -19,4 +19,13 @@
         to connect with. </string>
     <string name="peer_discovery_failed">Peer discovery failed: %1$s</string>
     <string name="no_devices">No devices found… :(</string>
+    <string name="wd_connection_failed">
+        Connection failed. This could be because:
+        1. The device denied the connection request.
+        2. The device has already connected to another device.
+        3. Technical issues (such as the device moved out of range).
+    </string>
+    <string name="enable_location">
+        The LOCATION permission must be granted for Aurora to work. Please add this permission in Settings.
+    </string>
 </resources>

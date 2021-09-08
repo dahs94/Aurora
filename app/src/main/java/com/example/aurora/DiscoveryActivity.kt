@@ -24,6 +24,8 @@ class DiscoveryActivity : AppCompatActivity() {
     private lateinit var wReceiver: BroadcastReceiver
     lateinit var peerListener: WifiP2pManager.PeerListListener
     lateinit var connectionListener: WifiP2pManager.ConnectionInfoListener
+    lateinit var groupInfoListener: WifiP2pManager.GroupInfoListener
+    lateinit var deviceName: String
     private val intentFilter: IntentFilter = IntentFilter()
     private val p2pDeviceList: MutableList<WifiP2pDevice> = mutableListOf()
     private var groupCreated: Boolean = false
@@ -69,26 +71,38 @@ class DiscoveryActivity : AppCompatActivity() {
             onConnectionAvailable(it)
         }
 
+        groupInfoListener = WifiP2pManager.GroupInfoListener {
+            onGroupAvailable(it)
+        }
+
         val listView: ListView = findViewById(R.id.search_listview)
         listView.setOnItemClickListener { parent, view, position, id ->
             val selectedItem: WifiP2pDevice = parent.getItemAtPosition(position) as WifiP2pDevice
-            onDeviceSelected(selectedItem)
+            connectPeer(selectedItem)
         }
     }
 
-    @SuppressLint("MissingPermission")
     private fun discoverWiFiDevices() {
-        val discoveryTipTextView: TextView = findViewById(R.id.discoveryTipTextView)
-        wManager.discoverPeers(wChannel, object : WifiP2pManager.ActionListener {
-            override fun onSuccess() {
-                discoveryTipTextView.text = getString(R.string.peer_discovery)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED) {
+            Timber.i("Location permission already granted: DiscoverWiFiDevices")
+            val discoveryTipTextView: TextView = findViewById(R.id.discoveryTipTextView)
+            wManager.discoverPeers(wChannel, object : WifiP2pManager.ActionListener {
+                override fun onSuccess() {
+                    discoveryTipTextView.text = getString(R.string.peer_discovery)
 
-            }
-            override fun onFailure(reasonCode: Int) {
-                discoveryTipTextView.text = String.format(getString(R.string.peer_discovery_failed),
-                    reasonCode)
-            }
-        })
+                }
+                override fun onFailure(reasonCode: Int) {
+                    discoveryTipTextView.text = String.format(getString(R.string.peer_discovery_failed),
+                        reasonCode)
+                }
+            })
+        }
+        else {
+            val toastMessage: String = String.format(getString(R.string.enable_location))
+            val toast: Toast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG)
+            toast.show()
+        }
     }
 
     /**This will be called each time a new device is found, so we need to handle
@@ -121,23 +135,23 @@ class DiscoveryActivity : AppCompatActivity() {
         //Navigate to MainActivity & pass device details if connection successful
         if (groupCreated){
             val intent: Intent = Intent(this, MainActivity::class.java)
+            bundle.putString("DEVICE_NAME", deviceName)
             intent.putExtras(bundle)
             startActivity(Intent(intent))
         }
         else {
-            val toast: Toast = Toast.makeText(applicationContext,
-                "Connection failed, could not form group", Toast.LENGTH_LONG)
+            val toastMessage: String = String.format(getString(R.string.wd_connection_failed))
+            val toast: Toast = Toast.makeText(applicationContext, toastMessage, Toast.LENGTH_LONG)
             toast.show()
+
             val discoveryTipTextView: TextView = findViewById(R.id.discoveryTipTextView)
             discoveryTipTextView.text = getString(R.string.discovery_tip)
         }
     }
 
-    private fun onDeviceSelected(selectedItem: WifiP2pDevice) {
-        //Connect to device
-        bundle.putString("DEVICE_NAME", selectedItem.deviceName)
-        //bundle.putBoolean("DEVICE_SELECTED", true)
-        connectPeer(selectedItem)
+    private fun onGroupAvailable(group: WifiP2pGroup) {
+        val device: MutableList<WifiP2pDevice> = group.clientList as MutableList<WifiP2pDevice>
+        deviceName = device.first().deviceName
     }
 
     private fun connectPeer(deviceSelected: WifiP2pDevice) {
@@ -153,11 +167,12 @@ class DiscoveryActivity : AppCompatActivity() {
         //Permission check
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             == PackageManager.PERMISSION_GRANTED) {
+            Timber.i("Location permission already granted: connectPeer")
             //Connect to peer
             wManager.connect(wChannel, wifiPeerConfig, object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
                     val discoveryTipTextView: TextView = findViewById(R.id.discoveryTipTextView)
-                    discoveryTipTextView.text = "Connecting to $deviceName..."
+                    discoveryTipTextView.text = "Connecting to ${deviceName.lowercase()}..."
                 }
 
                 override fun onFailure(reason: Int) {
@@ -169,9 +184,8 @@ class DiscoveryActivity : AppCompatActivity() {
                 })
         }
         else {
-            val toast: Toast = Toast.makeText(this,
-                "The LOCATION permission must be granted for Aurora to work.",
-                Toast.LENGTH_LONG)
+            val toastMessage: String = String.format(getString(R.string.enable_location))
+            val toast: Toast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG)
             toast.show()
         }
     }
