@@ -20,14 +20,13 @@ class MainActivity : AppCompatActivity() {
 
         //handle bundle
         val deviceName: String? = intent.getStringExtra("DEVICE_NAME")
-        val deviceAddress: String? = intent.getStringExtra("DEVICE_ADDRESS")
         //val deviceSelected: Boolean = intent.getBooleanExtra("DEVICE_SELECTED",
             //false)
 
         setContentView(R.layout.activity_main)
         initListeners()
         checkForPermissions()
-        handleConnectedDevice(deviceName, deviceAddress)
+        handleConnectedDevice(deviceName)
     }
 
     //access resource, create intent & start activity using intent
@@ -74,8 +73,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleConnectedDevice(
-        deviceName: String?, deviceAddress: String?){
+    private fun handleConnectedDevice(deviceName: String?){
         if (deviceName != null) {
             val devNameTextView: TextView = findViewById(R.id.device_name_textview)
             devNameTextView.text = deviceName

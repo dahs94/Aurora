@@ -27,6 +27,7 @@ class DiscoveryActivity : AppCompatActivity() {
     private val intentFilter: IntentFilter = IntentFilter()
     private val p2pDeviceList: MutableList<WifiP2pDevice> = mutableListOf()
     private var groupCreated: Boolean = false
+    private val bundle: Bundle = Bundle()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,6 +117,27 @@ class DiscoveryActivity : AppCompatActivity() {
 
     private fun onConnectionAvailable(groupInfo: WifiP2pInfo){
         if (groupInfo.groupFormed) groupCreated = true
+
+        //Navigate to MainActivity & pass device details if connection successful
+        if (groupCreated){
+            val intent: Intent = Intent(this, MainActivity::class.java)
+            intent.putExtras(bundle)
+            startActivity(Intent(intent))
+        }
+        else {
+            val toast: Toast = Toast.makeText(applicationContext,
+                "Connection failed, could not form group", Toast.LENGTH_LONG)
+            toast.show()
+            val discoveryTipTextView: TextView = findViewById(R.id.discoveryTipTextView)
+            discoveryTipTextView.text = getString(R.string.discovery_tip)
+        }
+    }
+
+    private fun onDeviceSelected(selectedItem: WifiP2pDevice) {
+        //Connect to device
+        bundle.putString("DEVICE_NAME", selectedItem.deviceName)
+        //bundle.putBoolean("DEVICE_SELECTED", true)
+        connectPeer(selectedItem)
     }
 
     private fun connectPeer(deviceSelected: WifiP2pDevice) {
@@ -134,7 +156,8 @@ class DiscoveryActivity : AppCompatActivity() {
             //Connect to peer
             wManager.connect(wChannel, wifiPeerConfig, object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
-                    Timber.i("Connection to $deviceName initiated")
+                    val discoveryTipTextView: TextView = findViewById(R.id.discoveryTipTextView)
+                    discoveryTipTextView.text = "Connecting to $deviceName..."
                 }
 
                 override fun onFailure(reason: Int) {
@@ -149,27 +172,6 @@ class DiscoveryActivity : AppCompatActivity() {
             val toast: Toast = Toast.makeText(this,
                 "The LOCATION permission must be granted for Aurora to work.",
                 Toast.LENGTH_LONG)
-            toast.show()
-        }
-    }
-
-    private fun onDeviceSelected(selectedItem: WifiP2pDevice) {
-        //Connect to device
-        connectPeer(selectedItem)
-
-        //Navigate to MainActivity & pass device details if connection successful
-        if (groupCreated){
-            val bundle: Bundle = Bundle()
-            bundle.putString("DEVICE_NAME", selectedItem.deviceName)
-            bundle.putString("DEVICE_ADDRESS", selectedItem.deviceAddress)
-            //bundle.putBoolean("DEVICE_SELECTED", true)
-            val intent: Intent = Intent(this, MainActivity::class.java)
-            intent.putExtras(bundle)
-            startActivity(Intent(intent))
-        }
-        else {
-            val toast: Toast = Toast.makeText(applicationContext,
-                "Connection failed, could not form group", Toast.LENGTH_LONG)
             toast.show()
         }
     }
