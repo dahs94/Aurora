@@ -11,6 +11,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.Delay
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
@@ -46,7 +47,7 @@ class MainActivity : AppCompatActivity() {
             when (ContextCompat.checkSelfPermission(this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION)) {
                 PackageManager.PERMISSION_GRANTED -> {
-                    Timber.i("T_Debug: checkForPermissions() >> location permission granted")
+                    Timber.i("T_Debug: checkForPermissions() >> location permission already granted")
                 }
                 else -> {
                     Timber.i("T_Debug: checkForPermissions() >> request location permission")
@@ -66,7 +67,6 @@ class MainActivity : AppCompatActivity() {
             val toastMessage: String = String.format(getString(R.string.enable_location))
             val toast: Toast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG)
             toast.show()
-            checkForPermissions()
         }
         else {
             Timber.i("T_Debug: onRequestPermissionsResult() >> location permission granted")

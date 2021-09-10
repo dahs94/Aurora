@@ -120,7 +120,7 @@ class DiscoveryActivity : AppCompatActivity() {
 
     suspend fun discoveryTimer() {
         withContext(Default) {
-            val timeout: Long = 10000 //60 seconds
+            val timeout: Long = 15000 //two minute timeout
             delay(timeout)
             //after delay, stop searching
             wManager.stopPeerDiscovery(wChannel, object : WifiP2pManager.ActionListener {
@@ -139,15 +139,7 @@ class DiscoveryActivity : AppCompatActivity() {
      * the list correctly when a new device is added, this is why we set p2p device
      * list as a field in the class and not as a local variable in the function**/
     private fun onPeersAvailable(deviceList: WifiP2pDeviceList) {
-        if (deviceList != p2pDeviceList)
-        {
-            p2pDeviceList.clear()
-            for (device in deviceList.deviceList) {
-                p2pDeviceList.add(device)
-            }
-        }
-
-        if(p2pDeviceList.isEmpty()) {
+        if(deviceList.deviceList.isEmpty() ) {
             Timber.i("T_Debug: onPeersAvailable() >> p2pDeviceList is empty")
             val discoveryTipTextView: TextView = findViewById(R.id.discoveryTipTextView)
             val progressBar: ProgressBar = findViewById(R.id.progressBar)
@@ -156,6 +148,14 @@ class DiscoveryActivity : AppCompatActivity() {
             progressBar.visibility = View.GONE
         }
         else {
+            if (deviceList != p2pDeviceList)
+            {
+                p2pDeviceList.clear()
+                for (device in deviceList.deviceList) {
+                    p2pDeviceList.add(device)
+                }
+            }
+
             val listView: ListView = findViewById(R.id.search_listview)
             Timber.i("T_Debug: onPeersAvailable() >> updating ListView with new peers")
             listView.adapter = ListViewAdapter(this, p2pDeviceList)
@@ -191,6 +191,8 @@ class DiscoveryActivity : AppCompatActivity() {
     }
 
     private fun connectPeer(deviceSelected: WifiP2pDevice) {
+        Timber.i("T_Debug: connectPeer() >> connecting to ${deviceSelected.deviceName} " +
+                " - ${deviceSelected.deviceAddress}")
         val deviceName: String = deviceSelected.deviceName
         val wifiPeerConfig: WifiP2pConfig = WifiP2pConfig()
         wifiPeerConfig.deviceAddress = deviceSelected.deviceAddress
@@ -203,7 +205,7 @@ class DiscoveryActivity : AppCompatActivity() {
         //Permission check
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             == PackageManager.PERMISSION_GRANTED) {
-            Timber.i("T_Debug: connectPeer() >> Location permission already granted")
+            Timber.i("T_Debug: connectPeer() >> location permission already granted")
             //Connect to peer
             wManager.connect(wChannel, wifiPeerConfig, object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
@@ -220,6 +222,7 @@ class DiscoveryActivity : AppCompatActivity() {
                 })
         }
         else {
+            Timber.i("T_Debug: connectPeer() >> request location permission")
             val toastMessage: String = String.format(getString(R.string.enable_location))
             val toast: Toast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG)
             toast.show()

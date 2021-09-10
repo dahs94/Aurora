@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 import org.w3c.dom.Text
+import timber.log.Timber
 
 class ListViewAdapter(context: Context, deviceList: MutableList<WifiP2pDevice>) : BaseAdapter() {
 
