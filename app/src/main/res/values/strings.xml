@@ -12,7 +12,7 @@
     <string name="home">Home</string>
     <string name="search">Find by name</string>
     <string name="discovery_tip">Press the magnifying glass to search</string>
-    <string name="discovery_tip_fin">Search finished. Press to search again.</string>
+    <string name="discovery_tip_fin">Peer discovery finished. Available devices are shown below.</string>
     <string name="connected_to">Currently connected to:</string>
     <string name="device_name">No device connected</string>
     <string name="peer_discovery">Peer discovery started. Select a device below
@@ -28,4 +28,5 @@
     <string name="enable_location">
         The LOCATION permission must be granted for Aurora to work. Please add this permission in Settings.
     </string>
+    <string name="make_visible_button">Make me visible to other devices</string>
 </resources>

@@ -13,4 +13,5 @@
     <color name="header_branding">#FF000000</color>
     <color name="landing_SOS_button">#CE2029</color>
     <color name="off_white">#F9F8F5</color>
+    <color name="secondary_button_colour">#60696E</color>
 </resources>

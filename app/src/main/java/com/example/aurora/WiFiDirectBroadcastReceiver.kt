@@ -25,8 +25,6 @@ class WiFiDirectBroadcastReceiver(
 ) : BroadcastReceiver() {
     /**we must override this, because BroadcastReceiver is an abstract class**/
 
-    var peers: WifiP2pDeviceList = WifiP2pDeviceList()
-
     @SuppressLint("MissingPermission")
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
@@ -49,7 +47,7 @@ class WiFiDirectBroadcastReceiver(
                 wManager.requestConnectionInfo(wChannel, activity.connectionListener)
             }
             WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {
-                // Respond to this device's wifi state changing
+                //respond to this device's wifi state changing
             }
         }
     }

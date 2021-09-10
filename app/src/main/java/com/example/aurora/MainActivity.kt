@@ -46,10 +46,10 @@ class MainActivity : AppCompatActivity() {
             when (ContextCompat.checkSelfPermission(this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION)) {
                 PackageManager.PERMISSION_GRANTED -> {
-                    Timber.i("Location permission already granted: checkForPermissions")
+                    Timber.i("T_Debug: checkForPermissions() >> location permission granted")
                 }
                 else -> {
-                    Timber.i("Request location permission")
+                    Timber.i("T_Debug: checkForPermissions() >> request location permission")
                     ActivityCompat.requestPermissions(this,
                         arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
                 }
@@ -62,14 +62,14 @@ class MainActivity : AppCompatActivity() {
     {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-            Timber.i("Location permission denied")
+            Timber.i("T_Debug: onRequestPermissionsResult() >> location permission denied")
             val toastMessage: String = String.format(getString(R.string.enable_location))
             val toast: Toast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG)
             toast.show()
             checkForPermissions()
         }
         else {
-            Timber.i("Location permission granted")
+            Timber.i("T_Debug: onRequestPermissionsResult() >> location permission granted")
         }
     }
 
