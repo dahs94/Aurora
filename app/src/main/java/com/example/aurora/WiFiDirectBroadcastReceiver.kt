@@ -1,6 +1,7 @@
 package com.example.aurora
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -21,7 +22,7 @@ import timber.log.Timber
 class WiFiDirectBroadcastReceiver(
     private val wManager: WifiP2pManager,
     private val wChannel: WifiP2pManager.Channel,
-    private val activity: DiscoveryActivity
+    private val activity: Activity
 ) : BroadcastReceiver() {
     /**we must override this, because BroadcastReceiver is an abstract class**/
 
@@ -40,11 +41,15 @@ class WiFiDirectBroadcastReceiver(
                 }
             }
             WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
-                wManager.requestPeers(wChannel, activity.peerListener)
+                if (activity is DiscoveryActivity) {
+                    wManager.requestPeers(wChannel, activity.peerListener)
+                }
             }
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
-                wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
-                wManager.requestConnectionInfo(wChannel, activity.connectionListener)
+                if (activity is DiscoveryActivity) {
+                    wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
+                    wManager.requestConnectionInfo(wChannel, activity.connectionListener)
+                }
             }
             WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {
                 //respond to this device's wifi state changing
