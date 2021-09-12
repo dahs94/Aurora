@@ -17,7 +17,9 @@
     <string name="device_name">No device connected</string>
     <string name="peer_discovery">Peer discovery started. Select a device below
         to connect with. </string>
-    <string name="peer_discovery_failed">Peer discovery failed: %1$s</string>
+    <string name="peer_discovery_failed">Peer discovery failed. Please make sure
+        Aurora has location permissions.
+    </string>
     <string name="no_devices">No devices found… :(</string>
     <string name="wd_connection_failed">
         Connection failed. This could be because:
@@ -29,4 +31,7 @@
         The LOCATION permission must be granted for Aurora to work. Please add this permission in Settings.
     </string>
     <string name="make_visible_button">Make me visible to other devices</string>
+    <string name="make_visible_text">
+        Your device is temporarily visible to other Wi-Fi enabled devices.
+    </string>
 </resources>
