@@ -44,11 +44,17 @@ class WiFiDirectBroadcastReceiver(
                 if (activity is DiscoveryActivity) {
                     wManager.requestPeers(wChannel, activity.peerListener)
                 }
+                if (activity is MakeVisibleActivity) {
+                    //do nothing -- we're just advertising ourself
+                }
             }
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
                 if (activity is DiscoveryActivity) {
                     wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
                     wManager.requestConnectionInfo(wChannel, activity.connectionListener)
+                }
+                if (activity is MakeVisibleActivity) {
+                    //do nothing -- we're just advertising ourself
                 }
             }
             WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {

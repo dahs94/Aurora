@@ -36,6 +36,10 @@ class MainActivity : AppCompatActivity() {
         findDevicesButton.setOnClickListener {
             startActivity(Intent(this, DiscoveryActivity::class.java))
         }
+        val makeVisibleButton: Button = findViewById(R.id.make_visible_button)
+        makeVisibleButton.setOnClickListener {
+            startActivity(Intent(this, MakeVisibleActivity::class.java))
+        }
     }
 
     /**
