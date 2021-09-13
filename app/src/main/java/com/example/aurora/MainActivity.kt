@@ -16,6 +16,8 @@ import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var wifiDirectUtils: WiFiDirectUtils
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -23,11 +25,16 @@ class MainActivity : AppCompatActivity() {
         val deviceName: String? = intent.getStringExtra("DEVICE_NAME")
         //val deviceSelected: Boolean = intent.getBooleanExtra("DEVICE_SELECTED",
             //false)
-
         setContentView(R.layout.activity_main)
+        setupWiFiDirect()
         initListeners()
         checkForPermissions()
         handleConnectedDevice(deviceName)
+    }
+
+    private fun setupWiFiDirect() {
+        wifiDirectUtils = WiFiDirectUtils(this, this)
+        wifiDirectUtils.initWiFiDirect()
     }
 
     //access resource, create intent & start activity using intent
@@ -39,6 +46,12 @@ class MainActivity : AppCompatActivity() {
         val makeVisibleButton: Button = findViewById(R.id.make_visible_button)
         makeVisibleButton.setOnClickListener {
             startActivity(Intent(this, MakeVisibleActivity::class.java))
+        }
+        val disconnectButton: Button = findViewById(R.id.disconnect_button)
+        disconnectButton.setOnClickListener {
+            wifiDirectUtils.disconnect()
+            val devNameTextView: TextView = findViewById(R.id.device_name_textview)
+            devNameTextView.text = "No device connected"
         }
     }
 

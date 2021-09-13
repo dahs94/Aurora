@@ -46,6 +46,10 @@ class MakeVisibleActivity : AppCompatActivity() {
         wifiDirectUtils.initWiFiDiscovery()
     }
 
+
+    /**
+     * BUG: Not working, not passing name/moving to ActivityMain when a device connects.
+     */
     private fun onConnectionAvailable(groupInfo: WifiP2pInfo){
         var groupCreated: Boolean = false
         val bundle: Bundle = Bundle()

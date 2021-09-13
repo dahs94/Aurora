@@ -84,6 +84,18 @@ class WiFiDirectUtils(
         })
     }
 
+    fun disconnect() {
+        wManager.removeGroup(wChannel, object : WifiP2pManager.ActionListener  {
+            override fun onSuccess() {
+                Timber.i("T_Debug: stopDiscovery >> Group removed")
+            }
+
+            override fun onFailure(reason: Int) {
+                Timber.i("T_Debug: stopDiscovery >> Cannot remove group")
+            }
+        })
+    }
+
     fun connectPeer(deviceSelected: WifiP2pDevice) {
         Timber.i("T_Debug: connectPeer() >> connecting to ${deviceSelected.deviceName} " +
                 " - ${deviceSelected.deviceAddress}")
