@@ -30,7 +30,7 @@
         android:layout_height="wrap_content"
         android:text="@string/connected_to"
         android:textAlignment="center"
-        app:layout_constraintBottom_toTopOf="@+id/landing_talk_button"
+        app:layout_constraintBottom_toTopOf="@+id/transmit_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -59,7 +59,7 @@
         app:layout_constraintTop_toBottomOf="@+id/device_name_textview" />
 
     <ImageButton
-        android:id="@+id/landing_talk_button"
+        android:id="@+id/transmit_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
@@ -76,6 +76,8 @@
         android:id="@+id/find_devices_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:text="@string/landing_scan_button"
         app:layout_constraintBottom_toTopOf="@+id/make_visible_button"
         app:layout_constraintEnd_toEndOf="parent"
@@ -86,6 +88,8 @@
         android:id="@+id/make_visible_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:backgroundTint="@color/secondary_button_colour"
         android:text="@string/make_visible_button"
         app:layout_constraintBottom_toBottomOf="parent"

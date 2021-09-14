@@ -2,11 +2,12 @@ package com.example.aurora
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.wifi.p2p.WifiP2pConfig
+import android.net.wifi.p2p.*
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -17,10 +18,12 @@ import timber.log.Timber
 class MainActivity : AppCompatActivity() {
 
     private lateinit var wifiDirectUtils: WiFiDirectUtils
+    lateinit var connectionListener: WifiP2pManager.ConnectionInfoListener
+    lateinit var groupInfoListener: WifiP2pManager.GroupInfoListener
+    private var deviceName: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         //handle bundle
         val deviceName: String? = intent.getStringExtra("DEVICE_NAME")
         //val deviceSelected: Boolean = intent.getBooleanExtra("DEVICE_SELECTED",
@@ -28,8 +31,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setupWiFiDirect()
         initListeners()
-        checkForPermissions()
-        handleConnectedDevice(deviceName)
+        handleConnection(deviceName)
     }
 
     private fun setupWiFiDirect() {
@@ -51,46 +53,40 @@ class MainActivity : AppCompatActivity() {
         disconnectButton.setOnClickListener {
             wifiDirectUtils.disconnect()
             val devNameTextView: TextView = findViewById(R.id.device_name_textview)
-            devNameTextView.text = "No device connected"
+            devNameTextView.text = ""
+        }
+        val transmitButton: ImageButton = findViewById(R.id.transmit_button)
+        transmitButton.setOnClickListener {
+            transmitMessage()
+        }
+        connectionListener = WifiP2pManager.ConnectionInfoListener {
+            onConnectionAvailable(it)
+        }
+        groupInfoListener = WifiP2pManager.GroupInfoListener {
+            onGroupAvailable(it)
         }
     }
 
-    /**
-     * Request runtime permissions
-     */
-    private fun checkForPermissions() {
-        //VERSION_CODES.M == SDK 23
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            when (ContextCompat.checkSelfPermission(this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-                PackageManager.PERMISSION_GRANTED -> {
-                    Timber.i("T_Debug: checkForPermissions() >> location permission already granted")
-                }
-                else -> {
-                    Timber.i("T_Debug: checkForPermissions() >> request location permission")
-                    ActivityCompat.requestPermissions(this,
-                        arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
-                }
-            }
+    private fun onGroupAvailable(group: WifiP2pGroup) {
+        /*Get name of connected device. At this time - we're only going to be connected
+        to one device. We know this device is the owner, so we just need to get the first
+        client.*/
+        val clientDevice: WifiP2pDevice = group.clientList.elementAt(0)
+        deviceName = clientDevice.deviceName
+        handleConnection(deviceName)
+    }
+
+    private fun onConnectionAvailable(groupInfo: WifiP2pInfo) {
+        if (groupInfo.groupFormed) {
+            //set connected device details
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray)
-    {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-            Timber.i("T_Debug: onRequestPermissionsResult() >> location permission denied")
-            val toastMessage: String = String.format(getString(R.string.enable_location))
-            val toast: Toast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG)
-            toast.show()
-        }
-        else {
-            Timber.i("T_Debug: onRequestPermissionsResult() >> location permission granted")
-        }
+    private fun transmitMessage() {
+        //val UDPClient: UDPClient = UDPClient()
     }
 
-    private fun handleConnectedDevice(deviceName: String?){
+    private fun handleConnection(deviceName: String?){
         if (deviceName != null) {
             val devNameTextView: TextView = findViewById(R.id.device_name_textview)
             devNameTextView.text = deviceName

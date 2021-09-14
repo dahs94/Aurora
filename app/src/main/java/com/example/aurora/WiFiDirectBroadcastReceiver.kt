@@ -31,10 +31,7 @@ class WiFiDirectBroadcastReceiver(
         when (intent.action) {
             WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> {
                 val wifiState: Int = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1)
-                if (wifiState == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
-                    //Wi-Fi Direct is enabled. Nothing to do here.
-                }
-                else {
+                if (wifiState != WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
                     val toast: Toast = Toast.makeText(context, "Wi-Fi Direct is disabled. " +
                             "Please enable it in settings.", Toast.LENGTH_LONG)
                     toast.show()
@@ -44,17 +41,20 @@ class WiFiDirectBroadcastReceiver(
                 if (activity is DiscoveryActivity) {
                     wManager.requestPeers(wChannel, activity.peerListener)
                 }
-                if (activity is MakeVisibleActivity) {
-                    //do nothing -- we're just advertising ourself
-                }
             }
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
+                //different listener is called, depending on the Activity constructor
                 if (activity is DiscoveryActivity) {
                     wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
                     wManager.requestConnectionInfo(wChannel, activity.connectionListener)
                 }
                 if (activity is MakeVisibleActivity) {
-                    //do nothing -- we're just advertising ourself
+                    wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
+                    wManager.requestConnectionInfo(wChannel, activity.connectionListener)
+                }
+                if (activity is MainActivity) {
+                    wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
+                    wManager.requestConnectionInfo(wChannel, activity.connectionListener)
                 }
             }
             WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {
