@@ -16,7 +16,7 @@ class MakeVisibleActivity : AppCompatActivity() {
     private lateinit var wifiDirectUtils: WiFiDirectUtils
     lateinit var connectionListener: WifiP2pManager.ConnectionInfoListener
     lateinit var groupInfoListener: WifiP2pManager.GroupInfoListener
-    private lateinit var deviceName: String
+    private lateinit var peerName: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,22 +53,28 @@ class MakeVisibleActivity : AppCompatActivity() {
 
     private fun onGroupAvailable(group: WifiP2pGroup){
         /*Get name of connected device. At this time - we're only going to be connected
-        to one device. We know this device is the owner, so we just need to get the first
-        client.*/
-        val clientDevice: WifiP2pDevice = group.clientList.elementAt(0)
-        deviceName = clientDevice.deviceName
+        to one device. We know that this device is either the GO or the client*/
+        peerName = if (group.isGroupOwner) {
+            //get the one any only client in the list
+            val clientDevice: WifiP2pDevice = group.clientList.elementAt(0)
+            clientDevice.deviceName
+        } else
+        {
+            group.owner.deviceName
+        }
     }
 
     private fun onConnectionAvailable(groupInfo: WifiP2pInfo){
-        var groupCreated: Boolean = false
-        val bundle: Bundle = Bundle()
-
-        if (groupInfo.groupFormed) groupCreated = true
-
-        //Navigate to MainActivity & pass device details if connection successful
-        if (groupCreated){
+        if (groupInfo.groupFormed){
             val intent: Intent = Intent(this, MainActivity::class.java)
-            bundle.putString("DEVICE_NAME", deviceName)
+            val bundle: Bundle = Bundle()
+            bundle.putString("DEVICE_NAME", peerName)
+            bundle.putBoolean("GROUP_FORMED", true)
+            bundle.putString("DEVICE_IP",groupInfo.groupOwnerAddress.toString())
+            if (groupInfo.isGroupOwner) {
+                bundle.putBoolean("GROUP_OWNER", true)
+            }
+            else bundle.putBoolean("GROUP_OWNER", false)
             intent.putExtras(bundle)
             startActivity(Intent(intent))
         }

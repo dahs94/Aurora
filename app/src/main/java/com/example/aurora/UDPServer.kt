@@ -1,14 +1,9 @@
 package com.example.aurora
 
-import android.content.Context
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.lang.Exception
 import java.net.DatagramPacket
 import java.net.DatagramSocket
-import kotlin.coroutines.CoroutineContext
 
 class UDPServer() {
     private val port: Int = 4540

@@ -16,8 +16,6 @@ class DiscoveryActivity : AppCompatActivity() {
     lateinit var groupInfoListener: WifiP2pManager.GroupInfoListener
     private lateinit var peerName: String
     private val p2pDeviceList: MutableList<WifiP2pDevice> = mutableListOf()
-    private var groupCreated: Boolean = false
-    private val bundle: Bundle = Bundle()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,12 +24,8 @@ class DiscoveryActivity : AppCompatActivity() {
         progressBar.visibility = View.GONE
 
         wifiDirectUtils = WiFiDirectUtils(this, this)
-        setupWiFiDirect()
-        initListeners()
-    }
-
-    private fun setupWiFiDirect() {
         wifiDirectUtils.initWiFiDirect()
+        initListeners()
     }
 
     private fun initListeners() {
@@ -102,13 +96,37 @@ class DiscoveryActivity : AppCompatActivity() {
         }
     }
 
-    private fun onConnectionAvailable(groupInfo: WifiP2pInfo){
-        if (groupInfo.groupFormed) groupCreated = true
+    private fun onGroupAvailable(group: WifiP2pGroup) {
+        /*Get name of connected device. At this time - we're only going to be connected
+        to one device. We know that this device is either the GO or the client*/
+        peerName = if (group.isGroupOwner) {
+            //get the one any only client in the list
+            val clientDevice: WifiP2pDevice = group.clientList.elementAt(0)
+            clientDevice.deviceName
+        } else
+        {
+            group.owner.deviceName
+        }
+    }
 
+    private fun onConnectionAvailable(groupInfo: WifiP2pInfo){
         //Navigate to MainActivity & pass device details if connection successful
-        if (groupCreated){
+        if (groupInfo.groupFormed){
             val intent: Intent = Intent(this, MainActivity::class.java)
+            val bundle: Bundle = Bundle()
             bundle.putString("DEVICE_NAME", peerName)
+            bundle.putBoolean("GROUP_FORMED", true)
+            if (groupInfo.isGroupOwner) {
+                bundle.putBoolean("GROUP_OWNER", true)
+            }
+            else {
+                bundle.putBoolean("GROUP_OWNER", false)
+                var ipAddress: String = (groupInfo.groupOwnerAddress).toString()
+                ipAddress = ipAddress.substring(1)
+                bundle.putString("DEVICE_IP",ipAddress)
+            }
+            Timber.i("T_Debug: onConnectionAvailable() >> bundle details:" +
+                    bundle.toString())
             intent.putExtras(bundle)
             startActivity(Intent(intent))
         }
@@ -120,13 +138,6 @@ class DiscoveryActivity : AppCompatActivity() {
             val discoveryTipTextView: TextView = findViewById(R.id.discoveryTipTextView)
             discoveryTipTextView.text = getString(R.string.discovery_tip)
         }
-    }
-
-    private fun onGroupAvailable(group: WifiP2pGroup) {
-        /*At this time - we're only going to be connected to one device.
-        We know this device is the owner, so we just need to get the first client.*/
-        val clientDevice: WifiP2pDevice = group.clientList.elementAt(0)
-        peerName = clientDevice.deviceName
     }
 
     private fun connectToSelectedPeer(deviceSelected: WifiP2pDevice) {
