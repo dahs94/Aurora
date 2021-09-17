@@ -80,19 +80,6 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:text="@string/landing_scan_button"
-        app:layout_constraintBottom_toTopOf="@+id/make_visible_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/make_visible_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:backgroundTint="@color/secondary_button_colour"
-        android:text="@string/make_visible_button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

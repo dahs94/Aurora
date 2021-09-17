@@ -17,7 +17,7 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 
 class WiFiDirectUtils(
-    val context: Context,
+    private val context: Context,
     private val activity: Activity
 ) {
 
@@ -46,7 +46,7 @@ class WiFiDirectUtils(
             wManager.discoverPeers(wChannel, object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
                     CoroutineScope(Dispatchers.Default).launch {
-                        discoveryTimer()
+                        //discoveryTimer() not working atm
                         Timber.i("T_Debug: initWiFiDiscovery() >> " +
                                 "Discover devices initiated")
                     }

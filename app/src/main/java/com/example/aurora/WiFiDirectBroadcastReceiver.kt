@@ -48,10 +48,6 @@ class WiFiDirectBroadcastReceiver(
                     wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
                     wManager.requestConnectionInfo(wChannel, activity.connectionListener)
                 }
-                if (activity is MakeVisibleActivity) {
-                    wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
-                    wManager.requestConnectionInfo(wChannel, activity.connectionListener)
-                }
                 if (activity is MainActivity) {
                     wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
                     wManager.requestConnectionInfo(wChannel, activity.connectionListener)
