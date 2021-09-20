@@ -38,16 +38,13 @@ class WiFiDirectBroadcastReceiver(
                 }
             }
             WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
-                if (activity is DiscoveryActivity) {
+                //different listener is called, depending on the Activity constructor.
+                //included to make it easier to add more activities in the future.
+                if (activity is MainActivity) {
                     wManager.requestPeers(wChannel, activity.peerListener)
                 }
             }
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
-                //different listener is called, depending on the Activity constructor
-                if (activity is DiscoveryActivity) {
-                    wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
-                    wManager.requestConnectionInfo(wChannel, activity.connectionListener)
-                }
                 if (activity is MainActivity) {
                     wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
                     wManager.requestConnectionInfo(wChannel, activity.connectionListener)

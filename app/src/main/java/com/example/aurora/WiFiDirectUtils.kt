@@ -45,11 +45,8 @@ class WiFiDirectUtils(
             Timber.i("T_Debug: initWiFiDiscovery() >> Location permission already granted")
             wManager.discoverPeers(wChannel, object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
-                    CoroutineScope(Dispatchers.Default).launch {
-                        //discoveryTimer() not working atm
-                        Timber.i("T_Debug: initWiFiDiscovery() >> " +
+                    Timber.i("T_Debug: initWiFiDiscovery() >> " +
                                 "Discover devices initiated")
-                    }
                 }
                 override fun onFailure(reasonCode: Int) {
                     Timber.i("T_Debug: initWiFiDiscovery() >> " +
@@ -63,14 +60,14 @@ class WiFiDirectUtils(
         }
     }
 
-    private suspend fun discoveryTimer() {
+    /**private suspend fun discoveryTimer() {
         withContext(Dispatchers.Default) {
             val timeout: Long = 120000
             delay(timeout)
             //after delay, stop searching
             stopDiscovery()
         }
-    }
+    }**/
 
     fun stopDiscovery() {
         wManager.stopPeerDiscovery(wChannel, object : WifiP2pManager.ActionListener {

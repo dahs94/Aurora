@@ -1,22 +1,13 @@
 <resources>
     <string name="app_name">Aurora</string>
-    <string name="landing_SOS_button">SOS</string>
     <string name="landing_tooltip_textview">Hold the microphone down to talk</string>
     <string name="landing_microphone_img_content_description">Image of microphone, hold to talk</string>
     <string name="find_devices_magnifying_glass_content_description">
         Image of magnifying glass, press to search for devices</string>
     <string name="landing_scan_button">Find devices</string>
-    <string name="find_devices_scan_button">Scan</string>
-    <string name="back_button">Back</string>
     <string name="find_devices">Find Devices</string>
     <string name="home">Home</string>
-    <string name="search">Find by name</string>
-    <string name="discovery_tip">Press the magnifying glass to search</string>
-    <string name="discovery_tip_fin">Peer discovery finished. Available devices are shown below.</string>
-    <string name="connected_to">Currently connected to:</string>
-    <string name="device_name">No device connected</string>
-    <string name="peer_discovery">Peer discovery started. Select a device below
-        to connect with. </string>
+    <string name="discovery_tip">Select a device to connect</string>
     <string name="peer_discovery_failed">Peer discovery failed. Please make sure
         Aurora has location permissions.
     </string>
@@ -30,13 +21,5 @@
     <string name="enable_location">
         The LOCATION permission must be granted for Aurora to work. Please add this permission in Settings.
     </string>
-    <string name="make_visible_button">Make me visible to other devices</string>
-    <string name="make_visible_text">
-        Your device is temporarily visible to other Wi-Fi enabled devices.
-    </string>
-    <string name="disconnect_button">Disconnect</string>
-    <string name="peer_details">
-        Name: %1$s
-        \nGroup Owner: %2$s
-    </string>
+    <string name="dialog_message">Connect to %1$s?</string>
 </resources>

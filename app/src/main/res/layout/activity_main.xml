@@ -1,88 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/home_layout"
+    android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_marginTop="@dimen/margin_wide"
+    android:orientation="vertical">
 
     <TextView
-        android:id="@+id/landing_textview"
-        style="@style/default_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:text='@string/landing_tooltip_textview'
-        android:textAlignment="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/connected_textview"
+        android:id="@+id/discoveryTipTextView"
         style="@style/default_text_italics_smaller"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/connected_to"
-        android:textAlignment="center"
-        app:layout_constraintBottom_toTopOf="@+id/transmit_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/landing_textview" />
-
-    <TextView
-        android:id="@+id/device_name_textview"
-        style="@style/row_heading1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textAlignment="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/connected_textview" />
-
-    <Button
-        android:id="@+id/disconnect_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        android:text="@string/disconnect_button"
-        app:layout_constraintBottom_toTopOf="@+id/transmit_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/device_name_textview" />
-
-    <ImageButton
-        android:id="@+id/transmit_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:background="#0000"
-        android:contentDescription="@string/landing_microphone_img_content_description"
-        android:src="@drawable/ic_cartoon_microphone"
-        app:layout_constraintBottom_toTopOf="@+id/find_devices_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/connected_textview" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="@dimen/margin_wide"
+        android:layout_marginTop="@dimen/margin_wide"
+        android:text="@string/discovery_tip"
+        android:textAlignment="center" />
 
     <Button
         android:id="@+id/find_devices_button"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/landing_scan_button"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/discoveryTipTextView"
+        android:layout_marginStart="@dimen/margin_wide"
+        android:layout_marginEnd="@dimen/margin_wide"
+        android:layout_marginBottom="@dimen/margin_wide"
+        android:layout_marginTop="@dimen/margin_wide"
+        android:text="@string/landing_scan_button" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/find_devices_button"
+        android:layout_centerHorizontal="true"
+        tools:visibility="gone" />
+
+    <ListView
+        android:id="@+id/search_listview"
+        android:choiceMode="singleChoice"
+        android:listSelector="@color/item_selected_celadon_green"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/speak_image_button"
+        android:layout_below="@+id/progressBar"
+        />
+
+    <ImageButton
+        android:id="@+id/speak_image_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_wide"
+        android:layout_marginBottom="@dimen/margin_wide"
+        android:background="#0000"
+        android:contentDescription="@string/find_devices_magnifying_glass_content_description"
+        android:src="@drawable/ic_cartoon_microphone" />
+
+</RelativeLayout>
