@@ -21,5 +21,7 @@
     <string name="enable_location">
         The LOCATION permission must be granted for Aurora to work. Please add this permission in Settings.
     </string>
-    <string name="dialog_message">Connect to %1$s?</string>
+    <string name="dialog_message1">Connect to %1$s?</string>
+    <string name="dialog_message2">Initiating a search will disconnect you from any existing
+    Wi-Fi Direct connection. Are you sure you want to search?</string>
 </resources>

@@ -2,10 +2,12 @@ package com.example.aurora
 
 import android.graphics.Color
 import android.net.wifi.p2p.*
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import timber.log.Timber
@@ -17,9 +19,10 @@ class MainActivity : AppCompatActivity() {
     lateinit var groupInfoListener: WifiP2pManager.GroupInfoListener
     lateinit var peerListener: WifiP2pManager.PeerListListener
     lateinit var udpConnection: UDPConnection
-    lateinit var listView: ListView
+    private lateinit var listView: ListView
     private val p2pDeviceList: MutableList<WifiP2pDevice> = mutableListOf()
 
+    @RequiresApi(Build.VERSION_CODES.Q) //do something about this: i.e. increase minimum API
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -32,16 +35,11 @@ class MainActivity : AppCompatActivity() {
         listView = findViewById(R.id.search_listview)
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun initListeners() {
         val findDevicesButton: Button = findViewById(R.id.find_devices_button)
         findDevicesButton.setOnClickListener {
-            val progressBar: ProgressBar = findViewById(R.id.progressBar)
-            progressBar.visibility = View.VISIBLE
-
-            //Stop any previous discovery and start a new one.
-            wifiDirectUtils.stopDiscovery()
-            p2pDeviceList.clear()
-            wifiDirectUtils.initWiFiDiscovery()
+            findDevices()
         }
         val transmitButton: ImageButton = findViewById(R.id.speak_image_button)
         transmitButton.setOnClickListener {
@@ -49,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         }
         val listView: ListView = findViewById(R.id.search_listview)
         listView.setOnItemClickListener { parent, view, position, _ ->
-            listView.setSelector(R.color.item_selected_celadon_green);
+            listView.setSelector(R.color.item_selected_amber);
             handleSelect(parent.getItemAtPosition(position) as WifiP2pDevice, view)
         }
         peerListener = WifiP2pManager.PeerListListener() {
@@ -63,11 +61,57 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun findDevices() {
+        val progressBar: ProgressBar = findViewById(R.id.progressBar)
+        val dialog = AlertDialog.Builder(this@MainActivity)
+        dialog.apply {
+            setMessage(getString(R.string.dialog_message2))
+            setCancelable(true)
+            setPositiveButton("Yes") { dialog, _ ->
+                if (wifiDirectUtils.groupFormed()) {
+                    try {
+                        wifiDirectUtils.disconnect()
+                    }
+                    catch (e: Exception) {
+                        Timber.i("T_Debug: findDevices() >> error starting discovery: " +
+                                "$e")
+                        progressBar.visibility = View.GONE
+                    }
+                }
+                if (wifiDirectUtils.discoveryRunning()) {
+                    try {
+                        wifiDirectUtils.stopDiscovery()
+                    }
+                    catch (e: Exception) {
+                        Timber.i("T_Debug: findDevices() >> error starting discovery: " +
+                                "$e")
+                        progressBar.visibility = View.GONE
+                    }
+                }
+                try {
+                    wifiDirectUtils.initWiFiDiscovery()
+                }
+                catch (e: Exception) {
+                    Timber.i("T_Debug: findDevices() >> error starting discovery: " +
+                            "$e")
+                    progressBar.visibility = View.GONE
+                }
+                p2pDeviceList.clear()
+                progressBar.visibility = View.VISIBLE
+            }
+            setNegativeButton("No") { dialog, _ ->
+                dialog.dismiss()
+            }
+        }
+        (dialog.create()).show()
+    }
+
     private fun onPeersAvailable(deviceList: WifiP2pDeviceList) {
         if(deviceList.deviceList.isEmpty() ) {
             Timber.i("T_Debug: onPeersAvailable() >> p2pDeviceList is empty")
-            val progressBar: ProgressBar = findViewById(R.id.progressBar)
-            progressBar.visibility = View.GONE
+            //val progressBar: ProgressBar = findViewById(R.id.progressBar)
+            //progressBar.visibility = View.GONE
         }
         else {
             if (deviceList != p2pDeviceList)
@@ -86,33 +130,29 @@ class MainActivity : AppCompatActivity() {
     private fun handleSelect(selectedItem: WifiP2pDevice, view: View) {
         val dialog = AlertDialog.Builder(this@MainActivity)
         dialog.apply {
-            setMessage(String.format(getString(R.string.dialog_message), selectedItem.deviceName))
+            setMessage(String.format(getString(R.string.dialog_message1), selectedItem.deviceName))
             setCancelable(true)
             setPositiveButton("Yes") { dialog, _ ->
-                if (udpConnection.groupFormed) {
-                    Timber.i("T_Debug: handleSelect() >> disconnecting from current group")
                     val progressBar: ProgressBar = findViewById(R.id.progressBar)
                     progressBar.visibility = View.GONE
-                    // wifiDirectUtils.disconnect()
-                   // wifiDirectUtils.connectPeer(selectedItem)
-
+                    listView.setSelector(R.color.item_selected_celadon_green)
+                    //Connect to selected device
+                    try {
+                        wifiDirectUtils.connectPeer(selectedItem)
+                    }
+                    catch (e: Exception) {
+                        Timber.i("T_Debug: handleSelect() >> error connecting to peer: " +
+                                "$e")
+                        listView.setSelector(android.R.color.transparent)
+                    }
                 }
-                else {
-                   // wifiDirectUtils.connectPeer(selectedItem)
-                }
-
-            }
             setNegativeButton("No") { dialog, _ ->
-                listView.setSelector(android.R.color.transparent);
+                listView.setSelector(android.R.color.transparent)
                 dialog.dismiss()
             }
         }
         (dialog.create()).show()
     }
-
-    /**
-     * Really need to have a think about how we handle device connection.
-     **/
 
     private fun onGroupAvailable(group: WifiP2pGroup) {
         //udpConnection.getPeerName(group)

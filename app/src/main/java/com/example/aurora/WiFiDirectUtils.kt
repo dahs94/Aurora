@@ -1,6 +1,7 @@
 package com.example.aurora
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -9,9 +10,12 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
+import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pManager
+import android.os.Build
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
 import timber.log.Timber
@@ -25,6 +29,9 @@ class WiFiDirectUtils(
     lateinit var wChannel: WifiP2pManager.Channel
     lateinit var wReceiver: BroadcastReceiver
     val intentFilter: IntentFilter = IntentFilter()
+
+    private var groupFormed: Boolean = false
+    private var discoveryRunning: Boolean = false
 
     fun initWiFiDirect() {
         wManager = context.applicationContext.getSystemService(WIFI_P2P_SERVICE) as WifiP2pManager
@@ -49,14 +56,14 @@ class WiFiDirectUtils(
                                 "Discover devices initiated")
                 }
                 override fun onFailure(reasonCode: Int) {
-                    Timber.i("T_Debug: initWiFiDiscovery() >> " +
-                            "Discover devices failed: $reasonCode")
+                    throw Exception("initWiFiDiscovery() >> " +
+                        "Discover devices failed: $reasonCode")
                 }
             })
         }
         else {
-            Timber.i("T_Debug: initWiFiDiscovery() >> " +
-                    "Location permission missing")
+             throw Exception("initWiFiDiscovery() >>" +
+                     "discovery failed: fine location not granted")
         }
     }
 
@@ -69,6 +76,44 @@ class WiFiDirectUtils(
         }
     }**/
 
+    @RequiresApi(Build.VERSION_CODES.Q) //do something about this
+    fun refreshConnectionDetails() {
+        discoveryRunning()
+        groupFormed()
+    }
+
+    /**
+     * For both discoveryRunning & groupFormed, need a way to wait for the async listener result
+     * before running the rest of the code. Otherwise, it gives false results.
+     **/
+
+    @RequiresApi(Build.VERSION_CODES.Q) //do something about this
+    fun discoveryRunning() {
+        wManager.requestDiscoveryState(wChannel) { state ->
+            if (state == 1) discoveryRunning = true }
+        Timber.i("T_Debug: discoveryRunning >> discovery running: $discoveryRunning")
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q) //do something about this
+    fun groupFormed() {
+        //Permission check
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED) {
+            Timber.i("T_Debug: groupFormed() >> location permission already granted")
+            wManager.requestGroupInfo(wChannel) { group ->
+                Timber.i("T_Debug: groupFormed >> ${group.toString()}")
+                if (group != null) {
+                    Timber.i("T_Debug: groupFormed >> true")
+                    groupFormed = true
+                }
+            }
+        }
+        else {
+            throw Exception("groupFormed() >>" +
+                    "failed: fine location permission not granted")
+        }
+    }
+
     fun stopDiscovery() {
         wManager.stopPeerDiscovery(wChannel, object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
@@ -76,7 +121,8 @@ class WiFiDirectUtils(
             }
 
             override fun onFailure(reason: Int) {
-                Timber.i("T_Debug: stopDiscovery >> Discovery stop failed")
+                throw Exception("stopPeerDiscovery() >>" +
+                        "could not stop discovery: $reason")
             }
         })
     }
@@ -84,11 +130,11 @@ class WiFiDirectUtils(
     fun disconnect() {
         wManager.removeGroup(wChannel, object : WifiP2pManager.ActionListener  {
             override fun onSuccess() {
-                Timber.i("T_Debug: stopDiscovery >> Group removed")
+                Timber.i("T_Debug: stopDiscovery >> group removed")
             }
 
             override fun onFailure(reason: Int) {
-                Timber.i("T_Debug: stopDiscovery >> Cannot remove group")
+                throw Exception("disconnect() >> could not disconnect: $reason")
             }
         })
     }
@@ -117,14 +163,14 @@ class WiFiDirectUtils(
                 }
 
                 override fun onFailure(reason: Int) {
-                    Timber.i("T_Debug: connectPeer() >>" +
-                            "connection to $deviceName failed")
+                    throw Exception("connectPeer() >>" +
+                            "connection to $deviceName failed: $reason")
                 }
             })
         }
         else {
-            Timber.i("T_Debug: connectPeer() >> " +
-                    "Location permission missing")
+            throw Exception("connectPeer() >>" +
+                    "connection to $deviceName failed: fine location permission not granted")
         }
     }
 }

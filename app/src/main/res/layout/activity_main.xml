@@ -46,7 +46,7 @@
     <ListView
         android:id="@+id/search_listview"
         android:choiceMode="singleChoice"
-        android:listSelector="@color/item_selected_celadon_green"
+        android:listSelector="@color/item_selected_amber"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/speak_image_button"
