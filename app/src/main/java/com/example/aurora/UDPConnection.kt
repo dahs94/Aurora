@@ -29,35 +29,6 @@ class UDPConnection() {
         Timber.i("T_Debug: getPeerName() >> result: $peerName")
     }
 
-    fun getDeviceRole(groupInfo: WifiP2pInfo) {
-        if (groupInfo.groupFormed) {
-            groupFormed = true
-            if (groupInfo.isGroupOwner) {
-                groupOwner = true
-                Timber.i("T_Debug: getDeviceRole() >> is GO")
-            }
-            else {
-                groupOwner = false
-                Timber.i("T_Debug: getDeviceRole() >> is client")
-            }
-        }
-        else {
-            Timber.i("T_Debug: getDeviceRole() >> group formation failed")
-            groupFormed = false
-        }
-    }
-
-    fun getPeerAddress(groupInfo: WifiP2pInfo) {
-        if (groupOwner) {
-            //No address needed for now, just using simplex audio stream
-        }
-        else {
-            peerAddress = (groupInfo.groupOwnerAddress).toString()
-            peerAddress = peerAddress?.substring(1)
-            Timber.i("T_Debug: getPeerAddress() >> result: $peerAddress")
-        }
-    }
-
     fun receive() {
         if (groupOwner) {
             server = UDPServer()

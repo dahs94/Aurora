@@ -46,7 +46,7 @@ class WiFiDirectBroadcastReceiver(
             }
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
                 if (activity is MainActivity) {
-                    wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
+                    //wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
                     wManager.requestConnectionInfo(wChannel, activity.connectionListener)
                 }
             }
