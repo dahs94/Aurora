@@ -63,6 +63,10 @@ class WiFiDirectUtils(
         }
     }
 
+    fun getIsGroupFormed() {
+        //good to add this to logging
+    }
+
     fun stopDiscoveryIfRunning() {
         Timber.i("T_Debug: stopDiscoveryIfRunning() >> stopping peer discovery")
         wManager.stopPeerDiscovery(wChannel, object : WifiP2pManager.ActionListener {
@@ -104,7 +108,7 @@ class WiFiDirectUtils(
             //Connect to peer
             wManager.connect(wChannel, wifiPeerConfig, object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
-                    Timber.i("T_Debug: connectPeer() >>" +
+                    Timber.i("T_Debug: connectPeer() >> " +
                             "initiating connection to $deviceName")
                 }
 

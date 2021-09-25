@@ -5,7 +5,9 @@ import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.net.wifi.p2p.WifiP2pDeviceList
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.NetworkInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.widget.Toast
 import timber.log.Timber
@@ -28,7 +30,9 @@ class WiFiDirectBroadcastReceiver(
 
     @SuppressLint("MissingPermission")
     override fun onReceive(context: Context, intent: Intent) {
+
         when (intent.action) {
+
             WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> {
                 val wifiState: Int = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1)
                 if (wifiState != WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
@@ -37,6 +41,7 @@ class WiFiDirectBroadcastReceiver(
                     toast.show()
                 }
             }
+
             WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
                 //different listener is called, depending on the Activity constructor.
                 //included to make it easier to add more activities in the future.
@@ -44,15 +49,30 @@ class WiFiDirectBroadcastReceiver(
                     wManager.requestPeers(wChannel, activity.peerListener)
                 }
             }
+
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
-                if (activity is MainActivity) {
-                    //wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
-                    wManager.requestConnectionInfo(wChannel, activity.connectionListener)
+                //Check what kind of connection change this is
+                val networkInfo = intent.getParcelableExtra<NetworkInfo>(WifiP2pManager.EXTRA_NETWORK_INFO)
+                when (networkInfo != null && networkInfo.isConnected()) {
+                    true -> {
+                        Timber.i("T_Debug: onReceive() >> connection change: device connected")
+                        if (activity is MainActivity) {
+                            wManager.requestConnectionInfo(wChannel, activity.connectionListener)
+                        }
+                    }
+                    false -> {
+                        Timber.i("T_Debug: onReceive() >> connection change: device disconnected")
+                    }
+                    null -> {
+                        Timber.i("T_Debug: onReceive() >> connection change: null")
+                    }
                 }
             }
+
             WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {
                 //respond to this device's wifi state changing
             }
+
         }
     }
 }

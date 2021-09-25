@@ -12,9 +12,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var wifiDirectUtils: WiFiDirectUtils
     lateinit var connectionListener: WifiP2pManager.ConnectionInfoListener
-    lateinit var groupInfoListener: WifiP2pManager.GroupInfoListener
     lateinit var peerListener: WifiP2pManager.PeerListListener
-    lateinit var udpConnection: UDPConnection
     private val p2pDeviceList: MutableList<WifiP2pDevice> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,7 +23,6 @@ class MainActivity : AppCompatActivity() {
         wifiDirectUtils = WiFiDirectUtils(this, this)
         wifiDirectUtils.initWiFiDirect()
         initListeners()
-        //udpConnection = UDPConnection()
     }
 
     private fun initListeners() {
@@ -36,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         }
         val transmitButton: ImageButton = findViewById(R.id.speak_image_button)
         transmitButton.setOnClickListener {
-            udpConnection.transmit()
+
         }
         val listView: ListView = findViewById(R.id.search_listview)
         listView.setOnItemClickListener { parent, view, position, _ ->
@@ -46,11 +43,8 @@ class MainActivity : AppCompatActivity() {
         peerListener = WifiP2pManager.PeerListListener() {
             onPeersAvailable(it)
         }
-        /*groupInfoListener = WifiP2pManager.GroupInfoListener {
-            //onGroupAvailable(it)
-        }*/
         connectionListener = WifiP2pManager.ConnectionInfoListener {
-            //onConnectionAvailable(it)
+            onConnectionAvailable(it)
         }
     }
 
@@ -124,7 +118,29 @@ class MainActivity : AppCompatActivity() {
     private fun onConnectionAvailable(groupInfo: WifiP2pInfo) {
         val peerDevice: PeerDevice = PeerDevice(groupInfo)
         peerDevice.initConnection()
-        val peerIPAddress = peerDevice.getRemoteIPAddress()
+        val peerIPAddress: String = peerDevice.getRemoteIPAddress()
+        var toastMessage: String = ""
+        if (peerIPAddress == "/9.9.9.9") {
+            /*
+             PeerDevice 'remoteIPAddress' property on default & has not been updated.
+             Issue with device connectivity.
+            */
+            toastMessage = "Getting remote peer details failed. Disconnecting from remote peer, " +
+                    "please try again."
+            Timber.i("T_Debug: onConnectionAvailable() >> remote peer details: $toastMessage")
+            wifiDirectUtils.disconnectIfGroupFormed()
+        }
+        else {
+            Timber.i("T_Debug: onConnectionAvailable() >> connected to remote peer")
+            var role: String = "Client"
+            if (peerDevice.getRole(groupInfo) == 1) {
+                role = "Group owner"
+            }
+            toastMessage = "Connected to $peerIPAddress.\nThis device is the $role."
+            Timber.i("T_Debug: onConnectionAvailable() >> remote peer details: $toastMessage")
+
+        }
+        Toast.makeText(this,toastMessage,Toast.LENGTH_LONG).show()
     }
 
     override fun onResume() {

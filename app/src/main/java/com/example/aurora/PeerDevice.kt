@@ -1,6 +1,7 @@
 package com.example.aurora
 
 import android.net.wifi.p2p.WifiP2pInfo
+import kotlinx.coroutines.delay
 import timber.log.Timber
 import java.io.IOException
 import java.lang.Exception
@@ -12,7 +13,7 @@ import java.net.*
  */
 class PeerDevice(private val groupInfo: WifiP2pInfo) {
 
-     private var remoteIPAddress: InetAddress? = InetAddress.getByName("9.9.9.9")
+     private var remoteIPAddress: InetAddress = InetAddress.getByName("9.9.9.9")
 
     /**
      * Does work to make sure both devices know the IP address of the other device. In the
@@ -41,7 +42,7 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
                 we need to get it's IP address, and then transmit our own
                 */
                 remoteIPAddress = getAddressIsGroupOwner(groupInfo)
-                transmitClientIP()
+                //transmitClientIP()
             }
             else -> {
                 Timber.i("T_Debug: getPeerAddress() >> failed" +
@@ -57,7 +58,7 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
      *          1 = peer is the client
      *          2 = peer is the GO
      */
-    private fun getRole(groupInfo: WifiP2pInfo): Int {
+    fun getRole(groupInfo: WifiP2pInfo): Int {
         return when (groupInfo.isGroupOwner) {
             true -> 1
             false -> 2
@@ -81,9 +82,10 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
      * Transmits the client's IP address to the GO (runs if client)
      */
     private fun transmitClientIP() {
+        (Thread() {
         if (remoteIPAddress.toString() == "9.9.9.9") {
             Timber.i("T_Debug: transmitClientIP() >> remote IP address invalid")
-            return
+
         }
         val port: Int = 4540
         val socket: Socket = Socket(remoteIPAddress, port)
@@ -101,25 +103,25 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
         }
         finally {
             socket.close()
-        }
+        }}).start()
     }
 
     /**
      * Waits to receive the client's IP address (runs if GO)
      */
     private fun receiveClientIP() {
-        val port: Int = 4540
-        val socket: ServerSocket = ServerSocket(port)
-        try {
-            val clientTransmission = socket.accept()
-            remoteIPAddress = clientTransmission.inetAddress
-            Timber.i("T_Debug: receiveClientIP() >> client IP is ${remoteIPAddress.toString()}")
-        }
-        catch (exception: Exception) {
-            Timber.i("T_Debug: receiveClientIP() >> $exception")
-        }
-        finally {
-            socket.close()
-        }
+        (Thread() {
+            val port: Int = 4540
+            val socket: ServerSocket = ServerSocket(port)
+            try {
+                val clientTransmission = socket.accept()
+                remoteIPAddress = clientTransmission.inetAddress
+                Timber.i("T_Debug: receiveClientIP() >> client IP is ${remoteIPAddress.toString()}")
+            } catch (exception: Exception) {
+                Timber.i("T_Debug: receiveClientIP() >> $exception")
+            } finally {
+                socket.close()
+            }
+        }).start()
     }
 }
