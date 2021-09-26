@@ -27,7 +27,7 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
      */
 
     fun getRemoteIPAddress(): String {
-        return remoteIPAddress.toString()
+        return (remoteIPAddress.toString()).s
     }
 
     fun initConnection() {
