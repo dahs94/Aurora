@@ -24,4 +24,5 @@
     <string name="dialog_message1">Connect to %1$s?</string>
     <string name="dialog_message2">Initiating a search will disconnect you from any existing
     Wi-Fi Direct connection. Are you sure you want to search?</string>
+    <string name="onConnectedDevice">Connecting to device…please wait</string>
 </resources>
