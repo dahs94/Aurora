@@ -102,6 +102,7 @@ class MainActivity : AppCompatActivity() {
             setMessage(String.format(getString(R.string.dialog_message1), selectedItem.deviceName))
             setCancelable(true)
             setPositiveButton("Yes") { dialog, _ ->
+                    wifiDirectUtils.stopDiscoveryIfRunning()
                     listView.setSelector(R.color.item_selected_celadon_green)
                     progressBar.visibility = View.GONE
                     //Connect to selected device
@@ -127,39 +128,40 @@ class MainActivity : AppCompatActivity() {
         val peerDevice: PeerDevice = PeerDevice(groupInfo)
         tipTextView.text = getString(R.string.onConnectedDevice)
         progressBar.visibility = View.VISIBLE
+        /*
+            Launch operation in a separate thread. That thread then blocks & waits for
+            IO operations to complete. We then handle the result in the main thread.
+            we update the main thread first so give the user appropriate feedback.
+        */
         CoroutineScope(Dispatchers.Default).launch {
             CoroutineScope(Dispatchers.Default).async {
                 peerDevice.initConnection()
             }.await()
             withContext(Dispatchers.Main) {
                 Timber.i("T_Debug: onConnectionAvailable() >> all jobs finished.")
+                val peerIPAddress: String = peerDevice.getRemoteIPAddress()
+                var toastMessage: String = ""
+                if (peerIPAddress == "9.9.9.9") {
+                    /*
+                     PeerDevice 'remoteIPAddress' property on default & has not been updated.
+                     Issue with device connectivity.
+                    */
+                    toastMessage = "Getting remote peer details failed. Disconnecting from remote peer, " +
+                            "please try again."
+                    Timber.i("T_Debug: onConnectionAvailable() >> remote peer details: $toastMessage")
+                    wifiDirectUtils.disconnectIfGroupFormed()
+                }
+                else {
+                    Timber.i("T_Debug: onConnectionAvailable() >> connected to remote peer")
+                    var role: String = "Client"
+                    if (peerDevice.getRole(groupInfo) == 1) {
+                        role = "Group owner"
+                    }
+                    toastMessage = "Connected to $peerIPAddress.\nThis device is the $role."
+                }
+                Toast.makeText(applicationContext,toastMessage,Toast.LENGTH_LONG).show()
             }
         }
-
-        /*
-        */
-        /*val peerIPAddress: String = peerDevice.getRemoteIPAddress()
-        var toastMessage: String = ""
-        if (peerIPAddress == "/9.9.9.9") {
-            /*
-             PeerDevice 'remoteIPAddress' property on default & has not been updated.
-             Issue with device connectivity.
-            */
-            toastMessage = "Getting remote peer details failed. Disconnecting from remote peer, " +
-                    "please try again."
-            Timber.i("T_Debug: onConnectionAvailable() >> remote peer details: $toastMessage")
-            wifiDirectUtils.disconnectIfGroupFormed()
-        }
-        else {
-            Timber.i("T_Debug: onConnectionAvailable() >> connected to remote peer")
-            var role: String = "Client"
-            if (peerDevice.getRole(groupInfo) == 1) {
-                role = "Group owner"
-            }
-            toastMessage = "Connected to $peerIPAddress.\nThis device is the $role."
-
-        }
-        Toast.makeText(this,toastMessage,Toast.LENGTH_LONG).show()*/
     }
 
     override fun onResume() {

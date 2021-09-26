@@ -27,7 +27,7 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
      */
 
     fun getRemoteIPAddress(): String {
-        return (remoteIPAddress.toString()).s
+        return (remoteIPAddress.toString()).substring(1)
     }
 
     fun initConnection() {
@@ -89,16 +89,16 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
     private fun transmitClientIP() {
         CoroutineScope(Dispatchers.IO).launch {
             Timber.i("T_Debug transmitClientIP() >> ${Thread.currentThread()} started")
-            if (remoteIPAddress.toString() == "/9.9.9.9") {
+            if (getRemoteIPAddress() == "9.9.9.9") {
                 Timber.i("T_Debug: transmitClientIP() >> remote IP address invalid")
 
             }
             val port: Int = 4540
             val socket: Socket = Socket(remoteIPAddress, port)
-            val message = "Echo 123"
+            val message = "echo"
             try {
                 Timber.i("T_Debug: transmitClientIP() >> sending '$message' " +
-                        "from localhost to GO: $remoteIPAddress")
+                        "to peer device (GO) with connection details")
                 socket.getOutputStream().write((message).toByteArray())
             }
             catch (exception: IOException) {
@@ -123,7 +123,12 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
             try {
                 val clientTransmission = socket.accept()
                 remoteIPAddress = clientTransmission.inetAddress
-                Timber.i("T_Debug: receiveClientIP() >> client IP is ${remoteIPAddress.toString()}")
+                var message: ByteArray = (clientTransmission.getInputStream()).readBytes()
+                Timber.i("T_Debug: receiveClientIP() >> " +
+                        "${message.toString()} " +
+                        "received from client. Client IP is " +
+                        "${remoteIPAddress.toString().substring(1)} " +
+                        "my IP address is 192.168.49.1") //group owner address is always the same.
             } catch (exception: Exception) {
                 Timber.i("T_Debug: receiveClientIP() >> $exception")
             } finally {

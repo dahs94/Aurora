@@ -63,10 +63,6 @@ class WiFiDirectUtils(
         }
     }
 
-    fun getIsGroupFormed() {
-        //good to add this to logging
-    }
-
     fun stopDiscoveryIfRunning() {
         Timber.i("T_Debug: stopDiscoveryIfRunning() >> stopping peer discovery")
         wManager.stopPeerDiscovery(wChannel, object : WifiP2pManager.ActionListener {
