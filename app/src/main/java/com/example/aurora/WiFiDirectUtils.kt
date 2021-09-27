@@ -52,13 +52,13 @@ class WiFiDirectUtils(
                                 "Discover devices initiated")
                 }
                 override fun onFailure(reasonCode: Int) {
-                    throw Exception("initWiFiDiscovery() >> " +
+                    Timber.i("initWiFiDiscovery() >> " +
                         "Discover devices failed: $reasonCode")
                 }
             })
         }
         else {
-             throw Exception("initWiFiDiscovery() >>" +
+             Timber.i("initWiFiDiscovery() >>" +
                      "discovery failed: fine location not granted")
         }
     }
@@ -80,7 +80,7 @@ class WiFiDirectUtils(
                 Timber.i("T_Debug: disconnectIfGroupFormed() >> group removed")
             }
             override fun onFailure(reason: Int) {
-                //put error code in here
+                Timber.i("T_Debug: disconnectIfGroupFormed() >> group removal failed")
             }
         })
     }
@@ -109,13 +109,13 @@ class WiFiDirectUtils(
                 }
 
                 override fun onFailure(reason: Int) {
-                    throw Exception("connectPeer() >>" +
+                    Timber.i("T_Debug: connectPeer() >> " +
                             "connection to $deviceName failed: $reason")
                 }
             })
         }
         else {
-            throw Exception("connectPeer() >>" +
+            Timber.i("connectPeer() >>" +
                     "connection to $deviceName failed: fine location permission not granted")
         }
     }
