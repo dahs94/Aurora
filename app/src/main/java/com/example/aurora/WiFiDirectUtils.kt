@@ -45,26 +45,26 @@ class WiFiDirectUtils(
      fun initWiFiDiscovery() {
          if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
             == PackageManager.PERMISSION_GRANTED) {
-            Timber.i("T_Debug: initWiFiDiscovery() >> Location permission already granted")
+            Timber.i("T_Debug: initWiFiDiscovery() >> Location permission already granted.")
             wManager.discoverPeers(wChannel, object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
                     Timber.i("T_Debug: initWiFiDiscovery() >> " +
-                                "Discover devices initiated")
+                                "Discover devices initiated.")
                 }
                 override fun onFailure(reasonCode: Int) {
                     Timber.i("initWiFiDiscovery() >> " +
-                        "Discover devices failed: $reasonCode")
+                        "Discover devices failed: $reasonCode.")
                 }
             })
         }
         else {
              Timber.i("initWiFiDiscovery() >>" +
-                     "discovery failed: fine location not granted")
+                     "discovery failed: fine location not granted.")
         }
     }
 
-    fun stopDiscoveryIfRunning() {
-        Timber.i("T_Debug: stopDiscoveryIfRunning() >> stopping peer discovery")
+    fun stopDiscovery() {
+        Timber.i("T_Debug: stopDiscovery() >> stopping peer discovery.")
         wManager.stopPeerDiscovery(wChannel, object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
             }
@@ -73,21 +73,22 @@ class WiFiDirectUtils(
         })
     }
 
-    fun disconnectIfGroupFormed() {
-        Timber.i("T_Debug: disconnectIfGroupFormed() >> if group connected, exiting group")
+    fun disconnectGroup() {
+        Timber.i("T_Debug: disconnectGroup() >> if group connected, exiting group.")
         wManager.removeGroup(wChannel, object : WifiP2pManager.ActionListener  {
             override fun onSuccess() {
-                Timber.i("T_Debug: disconnectIfGroupFormed() >> group removed")
+                Timber.i("T_Debug: disconnectGroup() >> group removed.")
             }
             override fun onFailure(reason: Int) {
-                Timber.i("T_Debug: disconnectIfGroupFormed() >> group removal failed")
+                Timber.i("T_Debug: disconnectGroup() >> group removal failed " +
+                        "(this could be because no group exists).")
             }
         })
     }
 
     fun connectPeer(deviceSelected: WifiP2pDevice) {
         Timber.i("T_Debug: connectPeer() >> connecting to ${deviceSelected.deviceName} " +
-                " - ${deviceSelected.deviceAddress}")
+                " - ${deviceSelected.deviceAddress}.")
         val deviceName: String = deviceSelected.deviceName
         val wifiPeerConfig: WifiP2pConfig = WifiP2pConfig()
         wifiPeerConfig.deviceAddress = deviceSelected.deviceAddress
@@ -100,23 +101,23 @@ class WiFiDirectUtils(
         //Permission check
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
             == PackageManager.PERMISSION_GRANTED) {
-            Timber.i("T_Debug: connectPeer() >> location permission already granted")
+            Timber.i("T_Debug: connectPeer() >> location permission already granted.")
             //Connect to peer
             wManager.connect(wChannel, wifiPeerConfig, object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
                     Timber.i("T_Debug: connectPeer() >> " +
-                            "initiating connection to $deviceName")
+                            "initiating connection to $deviceName.")
                 }
 
                 override fun onFailure(reason: Int) {
                     Timber.i("T_Debug: connectPeer() >> " +
-                            "connection to $deviceName failed: $reason")
+                            "connection to $deviceName failed: $reason.")
                 }
             })
         }
         else {
             Timber.i("connectPeer() >>" +
-                    "connection to $deviceName failed: fine location permission not granted")
+                    "connection to $deviceName failed: fine location permission not granted.")
         }
     }
 }

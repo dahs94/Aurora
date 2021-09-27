@@ -5,7 +5,7 @@ import java.lang.Exception
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 
-class UDPServer() {
+/**class UDPServer() {
     private val port: Int = 4540
     private val dSocket: DatagramSocket = DatagramSocket(port)
     private val buffer: ByteArray = ByteArray(1024)
@@ -24,4 +24,4 @@ class UDPServer() {
             }
         }
     }
-}
+}**/

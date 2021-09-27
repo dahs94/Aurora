@@ -14,6 +14,6 @@
     <color name="landing_SOS_button">#CE2029</color>
     <color name="off_white">#F9F8F5</color>
     <color name="secondary_button_colour">#60696E</color>
-    <color name="item_selected_celadon_green">#AFE1AF</color>
+    <color name="item_selected_green">#AFE1AF</color>
     <color name="item_selected_amber">#FFBF00</color>
 </resources>

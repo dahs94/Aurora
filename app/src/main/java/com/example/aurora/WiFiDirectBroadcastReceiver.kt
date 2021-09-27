@@ -55,16 +55,16 @@ class WiFiDirectBroadcastReceiver(
                 val networkInfo = intent.getParcelableExtra<NetworkInfo>(WifiP2pManager.EXTRA_NETWORK_INFO)
                 when (networkInfo != null && networkInfo.isConnected()) {
                     true -> {
-                        Timber.i("T_Debug: onReceive() >> connection change: device connected")
+                        Timber.i("T_Debug: onReceive() >> connection change: device connected.")
                         if (activity is MainActivity) {
                             wManager.requestConnectionInfo(wChannel, activity.connectionListener)
                         }
                     }
                     false -> {
-                        Timber.i("T_Debug: onReceive() >> connection change: device disconnected")
+                        Timber.i("T_Debug: onReceive() >> connection change: device disconnected.")
                     }
                     null -> {
-                        Timber.i("T_Debug: onReceive() >> connection change: null")
+                        Timber.i("T_Debug: onReceive() >> connection change: null.")
                     }
                 }
             }

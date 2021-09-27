@@ -19,12 +19,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tipTextView: TextView
     private lateinit var progressBar: ProgressBar
     private lateinit var listView: ListView
+    private lateinit var peerName: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val progressBar: ProgressBar = findViewById(R.id.progressBar)
         progressBar.visibility = View.GONE
+        peerName = ""
         initResources()
         wifiDirectUtils = WiFiDirectUtils(this, this)
         wifiDirectUtils.initWiFiDirect()
@@ -48,8 +50,7 @@ class MainActivity : AppCompatActivity() {
 
         }
         listView.setOnItemClickListener { parent, view, position, _ ->
-            listView.setSelector(R.color.item_selected_amber);
-            handleSelect(parent.getItemAtPosition(position) as WifiP2pDevice, view)
+            handleSelect(parent.getItemAtPosition(position) as WifiP2pDevice)
         }
         peerListener = WifiP2pManager.PeerListListener() {
             onPeersAvailable(it)
@@ -66,8 +67,8 @@ class MainActivity : AppCompatActivity() {
             setMessage(getString(R.string.dialog_message2))
             setCancelable(true)
             setPositiveButton("Yes") { dialog, _ ->
-                wifiDirectUtils.stopDiscoveryIfRunning()
-                wifiDirectUtils.disconnectIfGroupFormed()
+                wifiDirectUtils.stopDiscovery()
+                wifiDirectUtils.disconnectGroup()
                 p2pDeviceList.clear()
                 wifiDirectUtils.initWiFiDiscovery()
             }
@@ -81,7 +82,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun onPeersAvailable(deviceList: WifiP2pDeviceList) {
         if(deviceList.deviceList.isEmpty() ) {
-            Timber.i("T_Debug: onPeersAvailable() >> p2pDeviceList is empty")
+            Timber.i("T_Debug: onPeersAvailable() >> p2pDeviceList is empty.")
         }
         else {
             if (deviceList != p2pDeviceList)
@@ -91,33 +92,22 @@ class MainActivity : AppCompatActivity() {
                     p2pDeviceList.add(device)
                 }
             }
-            Timber.i("T_Debug: onPeersAvailable() >> updating ListView with new peers")
+            Timber.i("T_Debug: onPeersAvailable() >> updating ListView with new peers.")
             listView.adapter = ListViewAdapter(this, p2pDeviceList)
         }
     }
 
-    private fun handleSelect(selectedItem: WifiP2pDevice, view: View) {
+    private fun handleSelect(selectedItem: WifiP2pDevice) {
+        peerName = selectedItem.deviceName
         val dialog = AlertDialog.Builder(this@MainActivity)
         dialog.apply {
-            setMessage(String.format(getString(R.string.dialog_message1), selectedItem.deviceName))
+            setMessage(String.format(getString(R.string.dialog_message1), peerName))
             setCancelable(true)
             setPositiveButton("Yes") { dialog, _ ->
-                    wifiDirectUtils.stopDiscoveryIfRunning()
-                    listView.setSelector(R.color.item_selected_celadon_green)
-                    progressBar.visibility = View.GONE
                     //Connect to selected device
-                    try {
-                        wifiDirectUtils.connectPeer(selectedItem)
-                    }
-                    catch (e: Exception) {
-                        Timber.i("T_Debug: handleSelect() >> error connecting to peer: " +
-                                "$e")
-
-                        listView.setSelector(android.R.color.transparent)
-                    }
+                    wifiDirectUtils.connectPeer(selectedItem)
                 }
             setNegativeButton("No") { dialog, _ ->
-                listView.setSelector(android.R.color.transparent)
                 dialog.dismiss()
             }
         }
@@ -129,16 +119,24 @@ class MainActivity : AppCompatActivity() {
         tipTextView.text = getString(R.string.onConnectedDevice)
         progressBar.visibility = View.VISIBLE
         /*
-            Launch operation in a separate thread. That thread then blocks & waits for
-            IO operations to complete. We then handle the result in the main thread.
-            we update the main thread first so give the user appropriate feedback.
+            Launch operation in a separate job. That job then blocks & waits for
+            IO jobs to complete. We then handle the result in the main thread.
+            we update the main thread first so give the user appropriate feedback
+            during operation.
         */
         CoroutineScope(Dispatchers.Default).launch {
             CoroutineScope(Dispatchers.Default).async {
-                peerDevice.initConnection()
+                peerDevice.handleConnection()
+                /*
+                  delay() = hack to delay job enough to get network details before changing
+                  context before doing this, 'all jobs finished' log would always trigger
+                  before handleConnection() finished, which would lead to an error. Not got
+                  to grips with how to fix this properly.
+                */
+                delay(3000)
             }.await()
             withContext(Dispatchers.Main) {
-                Timber.i("T_Debug: onConnectionAvailable() >> all jobs finished.")
+                Timber.i("T_Debug: onConnectionAvailable() >> handleConnection(): all jobs finished.")
                 val peerIPAddress: String = peerDevice.getRemoteIPAddress()
                 var toastMessage: String = ""
                 if (peerIPAddress == "9.9.9.9") {
@@ -146,10 +144,13 @@ class MainActivity : AppCompatActivity() {
                      PeerDevice 'remoteIPAddress' property on default & has not been updated.
                      Issue with device connectivity.
                     */
-                    toastMessage = "Getting remote peer details failed. Disconnecting from remote peer, " +
+                    toastMessage = "Getting remote peer details failed, disconnecting from remote peer, " +
                             "please try again."
-                    Timber.i("T_Debug: onConnectionAvailable() >> remote peer details: $toastMessage")
-                    wifiDirectUtils.disconnectIfGroupFormed()
+                    Timber.i("T_Debug: onConnectionAvailable() >> handleConnection() details " +
+                            "not received, aborting.")
+                    wifiDirectUtils.disconnectGroup()
+                    progressBar.visibility = View.VISIBLE
+                    tipTextView.text = getString(R.string.discovery_tip)
                 }
                 else {
                     Timber.i("T_Debug: onConnectionAvailable() >> connected to remote peer")
@@ -158,6 +159,8 @@ class MainActivity : AppCompatActivity() {
                         role = "Group owner"
                     }
                     toastMessage = "Connected to $peerIPAddress.\nThis device is the $role."
+                    progressBar.visibility = View.GONE
+                    tipTextView.text = String.format(getString(R.string.device_connected), peerName)
                 }
                 Toast.makeText(applicationContext,toastMessage,Toast.LENGTH_LONG).show()
             }
