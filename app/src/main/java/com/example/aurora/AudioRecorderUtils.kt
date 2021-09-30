@@ -33,6 +33,10 @@ class AudioRecorderUtils {
         recorder = AudioRecord(audioSource, sampleRateInHz, channelConfig, audioFormat, bufferSizeInBytes)
     }
 
+    /**
+     * starts audio recording & transmits recording to remote peer
+     * @Param peerDevice, the connected peer object
+     */
     fun startRecording(peerDevice: PeerDevice) {
         CoroutineScope(Dispatchers.IO).launch {
             val audioData: ByteArray = ByteArray(bufferSizeInBytes)
@@ -51,14 +55,18 @@ class AudioRecorderUtils {
                  supports 16 bit encoding */
                recorder.read(audioData, 0, audioData.size)
                //transmit array to remote peer, commonly accepted to use UDP to voice transmission
-                var udpSocket: DatagramSocket = DatagramSocket()
-                var udpPacket: DatagramPacket = DatagramPacket(audioData, audioData.size,
+                val udpSocket: DatagramSocket = DatagramSocket()
+                val udpPacket: DatagramPacket = DatagramPacket(audioData, audioData.size,
                     peerDevice.getRemoteIPAddress(), 4540)
                 Timber.i("T_Debug: startRecording() >> transmitting audio packet to peer, " +
                         "${peerDevice.getRemoteIPAddressString()}.")
                 udpSocket.send(udpPacket)
             }
         }
+    }
+
+    private fun talkingStick() {
+        TODO("Implement talking stick: only one device can transmit at a time")
     }
 
     fun stopRecording(){
@@ -71,34 +79,38 @@ class AudioRecorderUtils {
         else Timber.i("T_Debug: stopRecording() >> could not stop recording, no recording in progress.")
     }
 
-
-
-
-
-
-
-
-
-
     /**
-     * Retrieves the received recording and plays it. Uses the AudioTrack class.
+     * Retrieves the received recording as a ByteArray and writes it to the devices' speakers.
      */
     fun getRecording() {
-        val audioAttributesBuilder: AudioAttributes.Builder = AudioAttributes.Builder()
-            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-            .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+        CoroutineScope(Dispatchers.IO).launch {
+            var audioData: ByteArray = ByteArray(bufferSizeInBytes)
+            val audioAttributesBuilder: AudioAttributes.Builder = AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
 
-        val audioFormatBuilder: AudioFormat.Builder = AudioFormat.Builder()
-            .setSampleRate(sampleRateInHz)
-            .setEncoding(audioFormat)
-            .setChannelMask(channelConfig)
+            val audioFormatBuilder: AudioFormat.Builder = AudioFormat.Builder()
+                .setSampleRate(sampleRateInHz)
+                .setEncoding(audioFormat)
+                .setChannelMask(channelConfig)
 
-        val audioAttributes: AudioAttributes = audioAttributesBuilder.build()
-        val audioFormat: AudioFormat = audioFormatBuilder.build()
+            val audioAttributes: AudioAttributes = audioAttributesBuilder.build()
+            val audioFormat: AudioFormat = audioFormatBuilder.build()
 
-        val recording: AudioTrack = AudioTrack(audioAttributes, audioFormat, bufferSizeInBytes,
-            AudioTrack.MODE_STREAM, 1)
+            val recording: AudioTrack = AudioTrack(
+                audioAttributes, audioFormat, bufferSizeInBytes,
+                AudioTrack.MODE_STREAM, 1
+            )
+            recording.play()
 
-        recording.play()
+            while (!isRecording) {
+                val udpSocket: DatagramSocket = DatagramSocket()
+                val udpPacket: DatagramPacket = DatagramPacket(audioData, audioData.size)
+                udpSocket.receive(udpPacket)
+                audioData = udpPacket.data
+                Timber.i("T_Debug: getRecording() >> playing audio received from ${udpPacket.address}.")
+                recording.write(audioData, 0, audioData.size)
+            }
+        }
     }
 }
