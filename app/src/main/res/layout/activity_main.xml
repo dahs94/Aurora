@@ -52,6 +52,17 @@
         android:layout_below="@+id/progressBar"
         />
 
+    <!-- Image attribution: https://freepik.com -->
+    <ImageView
+        android:id="@+id/conversation_IV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/speak_image_button"
+        android:layout_below="@+id/find_devices_button"
+        android:src="@drawable/ic_conversation"
+        android:layout_centerHorizontal="true"
+        />
+
     <ImageButton
         android:id="@+id/speak_image_button"
         android:layout_width="wrap_content"

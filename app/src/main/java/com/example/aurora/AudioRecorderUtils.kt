@@ -1,12 +1,17 @@
 package com.example.aurora
 
 import android.media.*
+import android.view.View
+import android.widget.ImageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.io.IOException
 import java.net.DatagramPacket
 import java.net.DatagramSocket
+import java.net.InetSocketAddress
 
 /**
  * Class to simplify config & management of AudioRecord class & utility functions:
@@ -25,7 +30,8 @@ class AudioRecorderUtils() {
     private val sampleRateInHz: Int = 44100
     private val channelConfig: Int = AudioFormat.CHANNEL_IN_MONO
     private val audioFormat: Int = AudioFormat.ENCODING_PCM_16BIT
-    private val bufferSizeInBytes: Int = AudioRecord.getMinBufferSize(sampleRateInHz,channelConfig,audioFormat)
+    private val bufferSizeInBytes: Int = 4096 //
+    //AudioRecord.getMinBufferSize(sampleRateInHz,channelConfig,audioFormat) * 100
     private lateinit var recorder: AudioRecord
     private var isRecording: Boolean = false
 
@@ -60,7 +66,10 @@ class AudioRecorderUtils() {
                     peerDevice.getRemoteIPAddress(), 4540)
                 Timber.i("T_Debug: startRecording() >> transmitting audio packet to peer, " +
                         "${peerDevice.getRemoteIPAddressString()}.")
-                udpSocket.send(udpPacket)
+                try {udpSocket.send(udpPacket)}
+                catch (e: IOException) {
+                    Timber.i("T_Debug: startRecording() >> $e")
+                }
             }
         }
     }
@@ -74,7 +83,6 @@ class AudioRecorderUtils() {
             Timber.i("T_Debug: stopRecording() >> recording stopped.")
             isRecording = false
             recorder.stop()
-            //we need to stop transmitting the recording here
         }
         else Timber.i("T_Debug: stopRecording() >> could not stop recording, no recording in progress.")
     }
@@ -103,13 +111,18 @@ class AudioRecorderUtils() {
                 AudioTrack.MODE_STREAM, 1
             )
             recording.play()
-
+            val udpSocket: DatagramSocket = DatagramSocket(null)
+            udpSocket.reuseAddress = true
+            udpSocket.bind(InetSocketAddress(4540))
             while (!isRecording) {
-                val udpSocket: DatagramSocket = DatagramSocket()
                 val udpPacket: DatagramPacket = DatagramPacket(audioData, audioData.size)
-                udpSocket.receive(udpPacket)
+                try {udpSocket.receive(udpPacket)}
+                catch (e: IOException) {
+                    Timber.i("T_Debug: startRecording() >> $e")
+                }
                 audioData = udpPacket.data
-                Timber.i("T_Debug: getRecording() >> playing audio received from ${udpPacket.address}.")
+                var remoteAddress: String = udpPacket.address.toString().substring(1)
+                Timber.i("T_Debug: getRecording() >> playing audio received from $remoteAddress.")
                 recording.write(audioData, 0, audioData.size)
             }
         }

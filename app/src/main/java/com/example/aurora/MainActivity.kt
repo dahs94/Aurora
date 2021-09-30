@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var audioRecorderUtils: AudioRecorderUtils
     lateinit var connectionListener: WifiP2pManager.ConnectionInfoListener
     lateinit var peerListener: WifiP2pManager.PeerListListener
-    var peerDevice: PeerDevice? = null
+    private var peerDevice: PeerDevice? = null
     private val p2pDeviceList: MutableList<WifiP2pDevice> = mutableListOf()
     private lateinit var tipTextView: TextView
     private lateinit var progressBar: ProgressBar
@@ -30,17 +30,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var peerName: String
     private lateinit var findDevicesButton: Button
     private lateinit var microphoneIB: ImageButton
+    private lateinit var imageView: ImageView
     var groupFormed: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val progressBar: ProgressBar = findViewById(R.id.progressBar)
-        progressBar.visibility = View.GONE
         peerName = ""
         initResources()
+        progressBar.visibility = View.GONE
+        imageView.visibility = View.GONE
         wifiDirectUtils = WiFiDirectUtils(this, this)
         wifiDirectUtils.initWiFiDirect()
+        wifiDirectUtils.disconnectGroup() //disconnect any existing groups on startup
         audioRecorderUtils = AudioRecorderUtils()
         audioRecorderUtils.initAudioRecording()
         initListeners()
@@ -52,7 +54,7 @@ class MainActivity : AppCompatActivity() {
         listView = findViewById(R.id.search_listview)
         findDevicesButton = findViewById(R.id.find_devices_button)
         microphoneIB = findViewById(R.id.speak_image_button)
-
+        imageView = findViewById(R.id.conversation_IV)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -98,6 +100,7 @@ class MainActivity : AppCompatActivity() {
                 wifiDirectUtils.stopDiscovery()
                 wifiDirectUtils.disconnectGroup()
                 groupFormed = false
+                tipTextView.text = getString(R.string.discovery_tip)
                 p2pDeviceList.clear()
                 wifiDirectUtils.initWiFiDiscovery()
             }
@@ -129,6 +132,7 @@ class MainActivity : AppCompatActivity() {
     private fun handleIBPress() {
         if (groupFormed && peerDevice != null) {
             tipTextView.text = getString(R.string.transmit_audio)
+            imageView.visibility = View.VISIBLE
             audioRecorderUtils.startRecording(peerDevice!!)
         }
     }
@@ -136,6 +140,7 @@ class MainActivity : AppCompatActivity() {
     private fun handleIBRelease() {
         if (groupFormed && peerDevice != null) {
             tipTextView.text = String.format(getString(R.string.device_connected), peerName)
+            imageView.visibility = View.GONE
             audioRecorderUtils.stopRecording()
             audioRecorderUtils.getRecording()
         }
@@ -195,6 +200,7 @@ class MainActivity : AppCompatActivity() {
                         Timber.i("T_Debug: onConnectionAvailable() >> handleConnection() details " +
                                 "not received, aborting.")
                         wifiDirectUtils.disconnectGroup()
+                        tipTextView.text = getString(R.string.discovery_tip)
                         groupFormed = false
                         progressBar.visibility = View.VISIBLE
                         tipTextView.text = getString(R.string.discovery_tip)
