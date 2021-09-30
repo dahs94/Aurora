@@ -132,8 +132,9 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
                 val clientTransmission = socket.accept()
                 remoteIPAddress = clientTransmission.inetAddress
                 var inputStream: InputStream = clientTransmission.getInputStream()
-                var message: String = BufferedReader(InputStreamReader(inputStream)).lines().collect(
-                    Collectors.joining("\n"))
+                var message: String = "capuchin"
+                    //BufferedReader(InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"))
+                    //temporarily disabled BufferedReader, because need Nougat for it to work
                 Timber.i("T_Debug: receiveClientIP() >> " +
                         "$message " +
                         "received from client. Client IP is " +

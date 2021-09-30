@@ -26,4 +26,5 @@
     Wi-Fi Direct connection. Are you sure you want to search?</string>
     <string name="onConnectedDevice">Connecting to device…please wait</string>
     <string name="device_connected">Connected to: %1$s.</string>
+    <string name="transmit_audio">You are speaking...</string>
 </resources>

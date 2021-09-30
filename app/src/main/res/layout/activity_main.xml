@@ -63,5 +63,4 @@
         android:layout_marginBottom="@dimen/margin_wide"
         android:contentDescription="@string/find_devices_magnifying_glass_content_description"
         android:src="@drawable/ic_cartoon_microphone" />
-
 </RelativeLayout>

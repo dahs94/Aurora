@@ -1,11 +1,17 @@
 package com.example.aurora
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.net.wifi.p2p.*
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MotionEvent
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
 import timber.log.Timber
 
@@ -13,13 +19,18 @@ import timber.log.Timber
 class MainActivity : AppCompatActivity() {
 
     private lateinit var wifiDirectUtils: WiFiDirectUtils
+    private lateinit var audioRecorderUtils: AudioRecorderUtils
     lateinit var connectionListener: WifiP2pManager.ConnectionInfoListener
     lateinit var peerListener: WifiP2pManager.PeerListListener
+    var peerDevice: PeerDevice? = null
     private val p2pDeviceList: MutableList<WifiP2pDevice> = mutableListOf()
     private lateinit var tipTextView: TextView
     private lateinit var progressBar: ProgressBar
     private lateinit var listView: ListView
     private lateinit var peerName: String
+    private lateinit var findDevicesButton: Button
+    private lateinit var microphoneIB: ImageButton
+    var groupFormed: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +41,8 @@ class MainActivity : AppCompatActivity() {
         initResources()
         wifiDirectUtils = WiFiDirectUtils(this, this)
         wifiDirectUtils.initWiFiDirect()
+        audioRecorderUtils = AudioRecorderUtils()
+        audioRecorderUtils.initAudioRecording()
         initListeners()
     }
 
@@ -37,18 +50,32 @@ class MainActivity : AppCompatActivity() {
         tipTextView = findViewById(R.id.TipTextView)
         progressBar = findViewById(R.id.progressBar)
         listView = findViewById(R.id.search_listview)
+        findDevicesButton = findViewById(R.id.find_devices_button)
+        microphoneIB = findViewById(R.id.speak_image_button)
+
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun initListeners() {
-        val findDevicesButton: Button = findViewById(R.id.find_devices_button)
-
         findDevicesButton.setOnClickListener {
             findDevices()
         }
-        val transmitButton: ImageButton = findViewById(R.id.speak_image_button)
-        transmitButton.setOnClickListener {
+        microphoneIB.setOnTouchListener(object : View.OnTouchListener {
+            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+                if (event?.action == MotionEvent.ACTION_DOWN) {
+                    handleIBPress()
+                    return true
+                }
+                else if (event?.action == MotionEvent.ACTION_UP) {
+                    handleIBRelease()
+                    return true
+                }
+                else {
+                    return false
+                }
+            }
 
-        }
+        })
         listView.setOnItemClickListener { parent, view, position, _ ->
             handleSelect(parent.getItemAtPosition(position) as WifiP2pDevice)
         }
@@ -61,6 +88,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun findDevices() {
+        listView.visibility = View.VISIBLE
         progressBar.visibility = View.VISIBLE
         val dialog = AlertDialog.Builder(this@MainActivity)
         dialog.apply {
@@ -69,6 +97,7 @@ class MainActivity : AppCompatActivity() {
             setPositiveButton("Yes") { dialog, _ ->
                 wifiDirectUtils.stopDiscovery()
                 wifiDirectUtils.disconnectGroup()
+                groupFormed = false
                 p2pDeviceList.clear()
                 wifiDirectUtils.initWiFiDiscovery()
             }
@@ -97,6 +126,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun handleIBPress() {
+        if (groupFormed && peerDevice != null) {
+            tipTextView.text = getString(R.string.transmit_audio)
+            audioRecorderUtils.startRecording(peerDevice!!)
+        }
+    }
+
+    private fun handleIBRelease() {
+        if (groupFormed && peerDevice != null) {
+            tipTextView.text = String.format(getString(R.string.device_connected), peerName)
+            audioRecorderUtils.stopRecording()
+            audioRecorderUtils.getRecording()
+        }
+    }
+
     private fun handleSelect(selectedItem: WifiP2pDevice) {
         peerName = selectedItem.deviceName
         val dialog = AlertDialog.Builder(this@MainActivity)
@@ -115,7 +159,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onConnectionAvailable(groupInfo: WifiP2pInfo) {
-        val peerDevice: PeerDevice = PeerDevice(groupInfo)
+        peerDevice = PeerDevice(groupInfo)
+        groupFormed = true
         tipTextView.text = getString(R.string.onConnectedDevice)
         progressBar.visibility = View.VISIBLE
         /*
@@ -126,43 +171,51 @@ class MainActivity : AppCompatActivity() {
         */
         CoroutineScope(Dispatchers.Default).launch {
             CoroutineScope(Dispatchers.Default).async {
-                peerDevice.handleConnection()
+                peerDevice?.handleConnection()
                 /*
                   delay() = hack to delay job enough to get network details before changing
                   context before doing this, 'all jobs finished' log would always trigger
                   before handleConnection() finished, which would lead to an error. Not got
                   to grips with how to fix this properly. Perhaps adding another await()?
                 */
-                delay(1500)
+                delay(5000)
             }.await()
             withContext(Dispatchers.Main) {
                 Timber.i("T_Debug: onConnectionAvailable() >> handleConnection(): all jobs finished.")
-                val peerIPAddress: String = peerDevice.getRemoteIPAddressString()
-                var toastMessage: String = ""
-                if (peerIPAddress == "9.9.9.9") {
-                    /*
-                     PeerDevice 'remoteIPAddress' property on default & has not been updated.
-                     Issue with device connectivity.
-                    */
-                    toastMessage = "Getting remote peer details failed, disconnecting from remote peer, " +
-                            "please try again."
-                    Timber.i("T_Debug: onConnectionAvailable() >> handleConnection() details " +
-                            "not received, aborting.")
-                    wifiDirectUtils.disconnectGroup()
-                    progressBar.visibility = View.VISIBLE
-                    tipTextView.text = getString(R.string.discovery_tip)
+                if (peerDevice != null) {
+                    val peerIPAddress: String = peerDevice!!.getRemoteIPAddressString()
+                    var toastMessage: String = ""
+                    if (peerIPAddress == "9.9.9.9") {
+                        /*
+                         PeerDevice 'remoteIPAddress' property on default & has not been updated.
+                         Issue with device connectivity.
+                        */
+                        toastMessage = "Getting remote peer details failed, disconnecting from remote peer, " +
+                                "please try again."
+                        Timber.i("T_Debug: onConnectionAvailable() >> handleConnection() details " +
+                                "not received, aborting.")
+                        wifiDirectUtils.disconnectGroup()
+                        groupFormed = false
+                        progressBar.visibility = View.VISIBLE
+                        tipTextView.text = getString(R.string.discovery_tip)
+                    }
+                    else {
+                        Timber.i("T_Debug: onConnectionAvailable() >> connected to remote peer.")
+                        var role: String = "Client"
+                        if (peerDevice!!.getRole(groupInfo) == 1) {
+                            role = "Group owner"
+                        }
+                        toastMessage = "Connected to $peerIPAddress.\nThis device is the $role."
+                        listView.visibility = View.GONE
+                        progressBar.visibility = View.GONE
+                        tipTextView.text = String.format(getString(R.string.device_connected), peerName)
+                        audioRecorderUtils.getRecording()
+                    }
+                    Toast.makeText(applicationContext,toastMessage,Toast.LENGTH_LONG).show()
                 }
                 else {
-                    Timber.i("T_Debug: onConnectionAvailable() >> connected to remote peer")
-                    var role: String = "Client"
-                    if (peerDevice.getRole(groupInfo) == 1) {
-                        role = "Group owner"
-                    }
-                    toastMessage = "Connected to $peerIPAddress.\nThis device is the $role."
-                    progressBar.visibility = View.GONE
-                    tipTextView.text = String.format(getString(R.string.device_connected), peerName)
+                    Timber.i("T_Debug: onConnectionAvailable() >> ERROR, peerDevice is null.")
                 }
-                Toast.makeText(applicationContext,toastMessage,Toast.LENGTH_LONG).show()
             }
         }
     }

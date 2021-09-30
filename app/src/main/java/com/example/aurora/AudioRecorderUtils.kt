@@ -13,7 +13,7 @@ import java.net.DatagramSocket
  * https://developer.android.com/reference/kotlin/android/media/AudioRecord
  * The utilities in this class need to be run on a separate thread.
  */
-class AudioRecorderUtils {
+class AudioRecorderUtils() {
 
     /*AudioRecord constructors*/
     private val audioSource: Int = MediaRecorder.AudioSource.MIC
@@ -84,6 +84,7 @@ class AudioRecorderUtils {
      */
     fun getRecording() {
         CoroutineScope(Dispatchers.IO).launch {
+            Timber.i("T_Debug: getRecording() >> listening for audio from remote peer...")
             var audioData: ByteArray = ByteArray(bufferSizeInBytes)
             val audioAttributesBuilder: AudioAttributes.Builder = AudioAttributes.Builder()
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
@@ -92,7 +93,7 @@ class AudioRecorderUtils {
             val audioFormatBuilder: AudioFormat.Builder = AudioFormat.Builder()
                 .setSampleRate(sampleRateInHz)
                 .setEncoding(audioFormat)
-                .setChannelMask(channelConfig)
+                .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
 
             val audioAttributes: AudioAttributes = audioAttributesBuilder.build()
             val audioFormat: AudioFormat = audioFormatBuilder.build()

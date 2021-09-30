@@ -5,34 +5,40 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ImageView
+        android:id="@+id/mag_glass_IB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="#00000000"
+        android:src="@drawable/ic_magnifying_glass"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/device_name_header"
         style="@style/row_heading1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="Row One"
         android:textAlignment="center"
         app:layout_constraintBottom_toTopOf="@+id/device_type_header"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/mag_glass_IB"
+        app:layout_constraintStart_toEndOf="@+id/mag_glass_IB"/>
 
     <TextView
         android:id="@+id/device_type_header"
         style="@style/row_heading2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="4dp"
         android:text="Row two"
         android:textAlignment="center"
         app:layout_constraintStart_toStartOf="@+id/device_name_header"
-        app:layout_constraintTop_toBottomOf="@+id/device_name_header" />
+        app:layout_constraintTop_toBottomOf="@+id/device_name_header"
+        app:layout_constraintStart_toEndOf="@+id/mag_glass_IB"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
