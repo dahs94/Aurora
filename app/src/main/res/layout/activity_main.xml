@@ -59,8 +59,8 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/margin_wide"
+        android:background="@drawable/cartoon_microphone_selector"
         android:layout_marginBottom="@dimen/margin_wide"
-        android:background="#0000"
         android:contentDescription="@string/find_devices_magnifying_glass_content_description"
         android:src="@drawable/ic_cartoon_microphone" />
 

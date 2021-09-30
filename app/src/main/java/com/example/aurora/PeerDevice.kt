@@ -14,23 +14,29 @@ import java.util.stream.Collectors
 /**
  * Represents the connected peer device that the user initiated or received a connection to/from.
  * N.B. the group only ever consists of two devices in this application.
+ * Needs to be ran on a separate thread.
  */
 class PeerDevice(private val groupInfo: WifiP2pInfo) {
 
      private var remoteIPAddress: InetAddress = InetAddress.getByName("9.9.9.9")
 
     /**
-     * Does work to make sure both devices know the IP address of the other device. In the
-     * Wi-Fi Direct API, devices can only get the GO address when the group is formed. This
-     * means that if the device is a GO, it relies on clients sending it a packet before
-     * it knows their assigned P2p Ip address.
-     * @param role the WifiP2p role of the device, e.g. 1 for client
+     * E.g.
+     *      getRemoteIPAddress() = "192.168.49.150"
+     * @returns the IP address of the remote peer in string format, with leading '/' removed.
      */
-
-    fun getRemoteIPAddress(): String {
+    //could improve this by just overriding toString() method: TO DO
+    fun getRemoteIPAddressString(): String {
         return (remoteIPAddress.toString()).substring(1)
     }
 
+    fun getRemoteIPAddress(): InetAddress {
+        return remoteIPAddress
+    }
+
+    /**
+     * Sets device to transmit or receive remote peer address based on role
+     */
     fun handleConnection() {
         when (getRole(groupInfo)) {
             1 -> {
@@ -60,6 +66,7 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
     /**
      * Get whether the remote peer is a client or a GO.
      * @param groupInfo the groupInfo broadcast object received after connection
+     * E.g. getRole(groupInfo) = 1 if GO
      * @returns either 1 or 2.
      *          1 = peer is the client
      *          2 = peer is the GO
@@ -90,7 +97,7 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
     private fun transmitClientIP() {
         CoroutineScope(Dispatchers.IO).launch {
             Timber.i("T_Debug transmitClientIP() >> ${Thread.currentThread()} started.")
-            if (getRemoteIPAddress() == "9.9.9.9") {
+            if (getRemoteIPAddressString() == "9.9.9.9") {
                 Timber.i("T_Debug: transmitClientIP() >> remote IP address invalid.")
 
             }
@@ -130,7 +137,7 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
                 Timber.i("T_Debug: receiveClientIP() >> " +
                         "$message " +
                         "received from client. Client IP is " +
-                        "${remoteIPAddress.toString().substring(1)}" +
+                        remoteIPAddress.toString().substring(1) +
                         ", my IP address is 192.168.49.1.") //group owner address is always the same.
             } catch (exception: Exception) {
                 Timber.i("T_Debug: receiveClientIP() >> $exception.")

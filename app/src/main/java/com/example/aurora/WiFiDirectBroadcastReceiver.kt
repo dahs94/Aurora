@@ -51,7 +51,8 @@ class WiFiDirectBroadcastReceiver(
             }
 
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
-                //Check what kind of connection change this is
+                /*Check what kind of connection change this is. 'NetworkInfo' is depreciated, but
+                I could not find an alternative that worked correctly.*/
                 val networkInfo = intent.getParcelableExtra<NetworkInfo>(WifiP2pManager.EXTRA_NETWORK_INFO)
                 when (networkInfo != null && networkInfo.isConnected()) {
                     true -> {

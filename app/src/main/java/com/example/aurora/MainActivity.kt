@@ -8,7 +8,7 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import kotlinx.coroutines.*
 import timber.log.Timber
-import kotlin.concurrent.thread
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -131,13 +131,13 @@ class MainActivity : AppCompatActivity() {
                   delay() = hack to delay job enough to get network details before changing
                   context before doing this, 'all jobs finished' log would always trigger
                   before handleConnection() finished, which would lead to an error. Not got
-                  to grips with how to fix this properly.
+                  to grips with how to fix this properly. Perhaps adding another await()?
                 */
-                delay(3000)
+                delay(1500)
             }.await()
             withContext(Dispatchers.Main) {
                 Timber.i("T_Debug: onConnectionAvailable() >> handleConnection(): all jobs finished.")
-                val peerIPAddress: String = peerDevice.getRemoteIPAddress()
+                val peerIPAddress: String = peerDevice.getRemoteIPAddressString()
                 var toastMessage: String = ""
                 if (peerIPAddress == "9.9.9.9") {
                     /*
