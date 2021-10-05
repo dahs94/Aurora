@@ -59,6 +59,7 @@ class WiFiDirectBroadcastReceiver(
                         Timber.i("T_Debug: onReceive() >> connection change: device connected.")
                         if (activity is MainActivity) {
                             wManager.requestConnectionInfo(wChannel, activity.connectionListener)
+                            wManager.requestGroupInfo(wChannel, activity.groupInfoListener)
                         }
                     }
                     false -> {

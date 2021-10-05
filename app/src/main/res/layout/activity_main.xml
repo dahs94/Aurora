@@ -52,6 +52,21 @@
         android:layout_below="@+id/progressBar"
         />
 
+
+    <TextView
+        android:id="@+id/speakingTextView"
+        style="@style/default_text_italics_smaller"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/conversation_IV"
+        android:layout_below="@+id/find_devices_button"
+        android:layout_marginBottom="@dimen/margin_wide"
+        android:layout_marginTop="@dimen/margin_wide"
+        android:text=""
+        android:textAlignment="center"
+        android:visibility="gone"/>
+
     <!-- Image attribution: https://freepik.com -->
     <ImageView
         android:id="@+id/conversation_IV"
@@ -59,9 +74,9 @@
         android:layout_height="wrap_content"
         android:layout_above="@id/speak_image_button"
         android:layout_below="@+id/find_devices_button"
-        android:src="@drawable/ic_conversation"
         android:layout_centerHorizontal="true"
-        />
+        android:src="@drawable/ic_conversation"
+        android:visibility="gone" />
 
     <ImageButton
         android:id="@+id/speak_image_button"

@@ -21,10 +21,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var wifiDirectUtils: WiFiDirectUtils
     private lateinit var audioRecorderUtils: AudioRecorderUtils
     lateinit var connectionListener: WifiP2pManager.ConnectionInfoListener
+    lateinit var groupInfoListener: WifiP2pManager.GroupInfoListener
     lateinit var peerListener: WifiP2pManager.PeerListListener
     private var peerDevice: PeerDevice? = null
     private val p2pDeviceList: MutableList<WifiP2pDevice> = mutableListOf()
     private lateinit var tipTextView: TextView
+    private lateinit var speakingTextView: TextView
     private lateinit var progressBar: ProgressBar
     private lateinit var listView: ListView
     private lateinit var peerName: String
@@ -40,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         initResources()
         progressBar.visibility = View.GONE
         imageView.visibility = View.GONE
+        speakingTextView.visibility = View.GONE
         wifiDirectUtils = WiFiDirectUtils(this, this)
         wifiDirectUtils.initWiFiDirect()
         wifiDirectUtils.disconnectGroup() //disconnect any existing groups on startup
@@ -50,6 +53,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initResources() {
         tipTextView = findViewById(R.id.TipTextView)
+        speakingTextView = findViewById(R.id.speakingTextView)
         progressBar = findViewById(R.id.progressBar)
         listView = findViewById(R.id.search_listview)
         findDevicesButton = findViewById(R.id.find_devices_button)
@@ -86,6 +90,10 @@ class MainActivity : AppCompatActivity() {
         }
         connectionListener = WifiP2pManager.ConnectionInfoListener {
             onConnectionAvailable(it)
+        }
+        groupInfoListener = WifiP2pManager.GroupInfoListener {
+            //val clientDevice: WifiP2pDevice = it.clientList.elementAt(0)
+            //clientDevice.deviceName
         }
     }
 
@@ -131,7 +139,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleIBPress() {
         if (groupFormed && peerDevice != null) {
-            tipTextView.text = getString(R.string.transmit_audio)
+            speakingTextView.text = getString(R.string.transmit_audio)
+            speakingTextView.visibility = View.VISIBLE
             imageView.visibility = View.VISIBLE
             audioRecorderUtils.startRecording(peerDevice!!)
         }
@@ -139,7 +148,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleIBRelease() {
         if (groupFormed && peerDevice != null) {
-            tipTextView.text = String.format(getString(R.string.device_connected), peerName)
+            speakingTextView.text = ""
+            speakingTextView.visibility = View.GONE
             imageView.visibility = View.GONE
             audioRecorderUtils.stopRecording()
             audioRecorderUtils.getRecording()
@@ -189,16 +199,16 @@ class MainActivity : AppCompatActivity() {
                 Timber.i("T_Debug: onConnectionAvailable() >> handleConnection(): all jobs finished.")
                 if (peerDevice != null) {
                     val peerIPAddress: String = peerDevice!!.getRemoteIPAddressString()
-                    var toastMessage: String = ""
                     if (peerIPAddress == "9.9.9.9") {
                         /*
                          PeerDevice 'remoteIPAddress' property on default & has not been updated.
                          Issue with device connectivity.
                         */
-                        toastMessage = "Getting remote peer details failed, disconnecting from remote peer, " +
+                        var toastMessage: String = "Getting remote peer details failed, disconnecting from remote peer, " +
                                 "please try again."
                         Timber.i("T_Debug: onConnectionAvailable() >> handleConnection() details " +
                                 "not received, aborting.")
+                        Toast.makeText(applicationContext,toastMessage,Toast.LENGTH_LONG).show()
                         wifiDirectUtils.disconnectGroup()
                         tipTextView.text = getString(R.string.discovery_tip)
                         groupFormed = false
@@ -211,13 +221,12 @@ class MainActivity : AppCompatActivity() {
                         if (peerDevice!!.getRole(groupInfo) == 1) {
                             role = "Group owner"
                         }
-                        toastMessage = "Connected to $peerIPAddress.\nThis device is the $role."
+                        var message: String = "\nYou are connected to $peerIPAddress.\nThis device is the $role"
                         listView.visibility = View.GONE
                         progressBar.visibility = View.GONE
-                        tipTextView.text = String.format(getString(R.string.device_connected), peerName)
+                        tipTextView.text = String.format(getString(R.string.device_connected), message)
                         audioRecorderUtils.getRecording()
                     }
-                    Toast.makeText(applicationContext,toastMessage,Toast.LENGTH_LONG).show()
                 }
                 else {
                     Timber.i("T_Debug: onConnectionAvailable() >> ERROR, peerDevice is null.")
