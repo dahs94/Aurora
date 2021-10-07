@@ -2,6 +2,7 @@ package com.example.aurora
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
 import android.content.pm.PackageManager
 import android.net.wifi.p2p.*
 import androidx.appcompat.app.AppCompatActivity
@@ -18,13 +19,10 @@ import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var wifiDirectUtils: WiFiDirectUtils
+    private lateinit var bluetoothUtils: BluetoothUtils
     private lateinit var audioRecorderUtils: AudioRecorderUtils
-    lateinit var connectionListener: WifiP2pManager.ConnectionInfoListener
-    lateinit var groupInfoListener: WifiP2pManager.GroupInfoListener
-    lateinit var peerListener: WifiP2pManager.PeerListListener
     private var peerDevice: PeerDevice? = null
-    private val p2pDeviceList: MutableList<WifiP2pDevice> = mutableListOf()
+    private val p2pDeviceList: MutableList<BluetoothDevice> = mutableListOf()
     private lateinit var tipTextView: TextView
     private lateinit var speakingTextView: TextView
     private lateinit var progressBar: ProgressBar
@@ -33,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var findDevicesButton: Button
     private lateinit var microphoneIB: ImageButton
     private lateinit var imageView: ImageView
-    var groupFormed: Boolean = false
+    var connectionFormed: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,9 +41,9 @@ class MainActivity : AppCompatActivity() {
         progressBar.visibility = View.GONE
         imageView.visibility = View.GONE
         speakingTextView.visibility = View.GONE
-        wifiDirectUtils = WiFiDirectUtils(this, this)
-        wifiDirectUtils.initWiFiDirect()
-        wifiDirectUtils.disconnectGroup() //disconnect any existing groups on startup
+        bluetoothUtils = BluetoothUtils(this)
+        bluetoothUtils.initBluetooth()
+        //wifiDirectUtils.disconnectGroup() //disconnect any existing groups on startup
         audioRecorderUtils = AudioRecorderUtils()
         audioRecorderUtils.initAudioRecording()
         initListeners()
@@ -83,17 +81,7 @@ class MainActivity : AppCompatActivity() {
 
         })
         listView.setOnItemClickListener { parent, view, position, _ ->
-            handleSelect(parent.getItemAtPosition(position) as WifiP2pDevice)
-        }
-        peerListener = WifiP2pManager.PeerListListener() {
-            onPeersAvailable(it)
-        }
-        connectionListener = WifiP2pManager.ConnectionInfoListener {
-            onConnectionAvailable(it)
-        }
-        groupInfoListener = WifiP2pManager.GroupInfoListener {
-            //val clientDevice: WifiP2pDevice = it.clientList.elementAt(0)
-            //clientDevice.deviceName
+            //handleSelect(parent.getItemAtPosition(position) as WifiP2pDevice)
         }
     }
 
@@ -105,12 +93,12 @@ class MainActivity : AppCompatActivity() {
             setMessage(getString(R.string.dialog_message2))
             setCancelable(true)
             setPositiveButton("Yes") { dialog, _ ->
-                wifiDirectUtils.stopDiscovery()
-                wifiDirectUtils.disconnectGroup()
-                groupFormed = false
+                bluetoothUtils.cancelDiscovery()
+                //wifiDirectUtils.disconnectGroup()
+                connectionFormed = false
                 tipTextView.text = getString(R.string.discovery_tip)
                 p2pDeviceList.clear()
-                wifiDirectUtils.initWiFiDiscovery()
+                bluetoothUtils.discoverDevices()
             }
             setNegativeButton("No") { dialog, _ ->
                 progressBar.visibility = View.GONE
@@ -120,25 +108,23 @@ class MainActivity : AppCompatActivity() {
         (dialog.create()).show()
     }
 
-    private fun onPeersAvailable(deviceList: WifiP2pDeviceList) {
-        if(deviceList.deviceList.isEmpty() ) {
+     fun onPeersAvailable(device: BluetoothDevice?) {
+        if(device == null) {
             Timber.i("T_Debug: onPeersAvailable() >> p2pDeviceList is empty.")
         }
         else {
-            if (deviceList != p2pDeviceList)
+            if (device !in p2pDeviceList)
             {
-                p2pDeviceList.clear()
-                for (device in deviceList.deviceList) {
-                    p2pDeviceList.add(device)
-                }
+                Timber.i("T_Debug: onPeersAvailable() >> updating ListView with new Bluetooth peers.")
+                p2pDeviceList.add(device)
+                listView.adapter = ListViewAdapter(this, p2pDeviceList)
             }
-            Timber.i("T_Debug: onPeersAvailable() >> updating ListView with new peers.")
-            listView.adapter = ListViewAdapter(this, p2pDeviceList)
+
         }
     }
 
     private fun handleIBPress() {
-        if (groupFormed && peerDevice != null) {
+        if (connectionFormed && peerDevice != null) {
             speakingTextView.text = getString(R.string.transmit_audio)
             speakingTextView.visibility = View.VISIBLE
             imageView.visibility = View.VISIBLE
@@ -147,7 +133,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleIBRelease() {
-        if (groupFormed && peerDevice != null) {
+        if (connectionFormed && peerDevice != null) {
             speakingTextView.text = ""
             speakingTextView.visibility = View.GONE
             imageView.visibility = View.GONE
@@ -156,7 +142,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleSelect(selectedItem: WifiP2pDevice) {
+    /**private fun handleSelect(selectedItem: WifiP2pDevice) {
         peerName = selectedItem.deviceName
         val dialog = AlertDialog.Builder(this@MainActivity)
         dialog.apply {
@@ -171,9 +157,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
         (dialog.create()).show()
-    }
+    }**/
 
-    private fun onConnectionAvailable(groupInfo: WifiP2pInfo) {
+    /**private fun onConnectionAvailable(groupInfo: WifiP2pInfo) {
         peerDevice = PeerDevice(groupInfo)
         groupFormed = true
         tipTextView.text = getString(R.string.onConnectedDevice)
@@ -233,16 +219,16 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-    }
+    }**/
 
     override fun onResume() {
         super.onResume()
-        registerReceiver(wifiDirectUtils.wReceiver, wifiDirectUtils.intentFilter)
+        registerReceiver(bluetoothUtils.bReceiver, bluetoothUtils.intentFilter)
     }
 
     override fun onPause() {
         super.onPause()
-        unregisterReceiver(wifiDirectUtils.wReceiver)
+        unregisterReceiver(bluetoothUtils.bReceiver)
     }
 }
 

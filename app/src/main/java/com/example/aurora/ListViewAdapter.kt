@@ -1,5 +1,6 @@
 package com.example.aurora
 
+import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pDeviceList
@@ -11,10 +12,10 @@ import android.widget.TextView
 import org.w3c.dom.Text
 import timber.log.Timber
 
-class ListViewAdapter(context: Context, deviceList: MutableList<WifiP2pDevice>) : BaseAdapter() {
+class ListViewAdapter(context: Context, deviceList: MutableList<BluetoothDevice>) : BaseAdapter() {
 
     private val mContext: Context = context
-    private val mDeviceList: MutableList<WifiP2pDevice> = deviceList
+    private val mDeviceList: MutableList<BluetoothDevice> = deviceList
 
     /**Sets number of rows**/
     override fun getCount(): Int {
@@ -29,8 +30,8 @@ class ListViewAdapter(context: Context, deviceList: MutableList<WifiP2pDevice>) 
         val nameTextView: TextView = rowView.findViewById(R.id.device_name_header)
         val typeTextView: TextView = rowView.findViewById(R.id.device_type_header)
 
-        nameTextView.text = mDeviceList[position].deviceName
-        typeTextView.text = mDeviceList[position].deviceAddress
+        nameTextView.text = mDeviceList[position].name
+        typeTextView.text = mDeviceList[position].address
 
         return rowView
     }
