@@ -142,22 +142,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**private fun handleSelect(selectedItem: WifiP2pDevice) {
-        peerName = selectedItem.deviceName
+    private fun handleSelect(selectedItem: BluetoothDevice) {
+        peerName = selectedItem.name
         val dialog = AlertDialog.Builder(this@MainActivity)
         dialog.apply {
             setMessage(String.format(getString(R.string.dialog_message1), peerName))
             setCancelable(true)
             setPositiveButton("Yes") { dialog, _ ->
-                    //Connect to selected device
-                    wifiDirectUtils.connectPeer(selectedItem)
+                    //Initiate connection to device as Bluetooth client.
+                    bluetoothUtils.connectPeer(selectedItem)
                 }
             setNegativeButton("No") { dialog, _ ->
                 dialog.dismiss()
             }
         }
         (dialog.create()).show()
-    }**/
+    }
 
     /**private fun onConnectionAvailable(groupInfo: WifiP2pInfo) {
         peerDevice = PeerDevice(groupInfo)
