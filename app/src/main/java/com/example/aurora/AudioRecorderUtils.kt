@@ -1,5 +1,6 @@
 package com.example.aurora
 
+import android.bluetooth.BluetoothSocket
 import android.media.*
 import android.view.View
 import android.widget.ImageView
@@ -34,6 +35,7 @@ class AudioRecorderUtils() {
     //AudioRecord.getMinBufferSize(sampleRateInHz,channelConfig,audioFormat) * 100
     private lateinit var recorder: AudioRecord
     private var isRecording: Boolean = false
+    var socket: BluetoothSocket? = null
 
     fun initAudioRecording() {
         recorder = AudioRecord(audioSource, sampleRateInHz, channelConfig, audioFormat, bufferSizeInBytes)
@@ -43,7 +45,7 @@ class AudioRecorderUtils() {
      * starts audio recording & transmits recording to remote peer
      * @Param peerDevice, the connected peer object
      */
-    fun startRecording(peerDevice: PeerDevice) {
+    /**fun startRecording(socket: BluetoothSocket?) {
         CoroutineScope(Dispatchers.IO).launch {
             val audioData: ByteArray = ByteArray(bufferSizeInBytes)
             var validRemoteIP: Boolean = false
@@ -72,7 +74,7 @@ class AudioRecorderUtils() {
                 }
             }
         }
-    }
+    }**/
 
     private fun talkingStick() {
         TODO("Implement talking stick: only one device can transmit at a time")
@@ -90,7 +92,7 @@ class AudioRecorderUtils() {
     /**
      * Retrieves the received recording as a ByteArray and writes it to the devices' speakers.
      */
-    fun getRecording() {
+    fun getRecording(socket: BluetoothSocket) {
         CoroutineScope(Dispatchers.IO).launch {
             Timber.i("T_Debug: getRecording() >> listening for audio from remote peer...")
             var audioData: ByteArray = ByteArray(bufferSizeInBytes)
