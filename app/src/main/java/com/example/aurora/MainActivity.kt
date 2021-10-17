@@ -22,7 +22,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var bluetoothUtils: BluetoothUtils
     private lateinit var audioRecorderUtils: AudioRecorderUtils
-    private var peerDevice: PeerDevice? = null
     private val p2pDeviceList: MutableList<BluetoothDevice> = mutableListOf()
     private lateinit var tipTextView: TextView
     private lateinit var speakingTextView: TextView

@@ -113,6 +113,7 @@ class AudioRecorderUtils() {
                 AudioTrack.MODE_STREAM, 1
             )
             recording.play()
+
             val udpSocket: DatagramSocket = DatagramSocket(null)
             udpSocket.reuseAddress = true
             udpSocket.bind(InetSocketAddress(4540))
