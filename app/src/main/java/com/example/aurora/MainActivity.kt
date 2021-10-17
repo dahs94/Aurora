@@ -130,7 +130,8 @@ class MainActivity : AppCompatActivity() {
             speakingTextView.text = getString(R.string.transmit_audio)
             speakingTextView.visibility = View.VISIBLE
             imageView.visibility = View.VISIBLE
-            //audioRecorderUtils.startRecording(socket!!)
+            audioRecorderUtils.stopRecording()
+            audioRecorderUtils.startRecording(socket!!)
         }
     }
 
@@ -164,19 +165,30 @@ class MainActivity : AppCompatActivity() {
     }
 
      fun onConnectionAvailable(mySocket: BluetoothSocket) {
-         Timber.i("T_Debug: onConnectionAvailable() >> connection succeeded.")
-         connectionFormed = true
-         listView.visibility = View.GONE
-         progressBar.visibility = View.GONE
-         val message: String = "\nYou are connected to: ${mySocket.remoteDevice.name}"
-         tipTextView.text = String.format(getString(R.string.device_connected), message)
-         tipTextView.text = String.format(getString(R.string.device_connected), message)
-         //audioRecorderUtils.getRecording(mySocket)
+         if (mySocket.isConnected) {
+             socket = mySocket
+             Timber.i("T_Debug: onConnectionAvailable() >> connection succeeded.")
+             connectionFormed = true
+             listView.visibility = View.GONE
+             progressBar.visibility = View.GONE
+             val message: String = "\nYou are connected to: ${mySocket.remoteDevice.name}"
+             tipTextView.text = String.format(getString(R.string.device_connected), message)
+             audioRecorderUtils.getRecording(mySocket)
+         }
+         else {
+             Timber.i("T_Debug: onConnectionAvailable() >> connection failed.")
+         }
+
      }
 
     override fun onResume() {
         super.onResume()
         registerReceiver(bluetoothUtils.bReceiver, bluetoothUtils.intentFilter)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        bluetoothUtils.closeSocket(socket)
     }
 
     override fun onPause() {

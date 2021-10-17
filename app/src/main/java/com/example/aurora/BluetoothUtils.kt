@@ -182,4 +182,15 @@ class BluetoothUtils(
      private fun handleSocket (clientSocket: BluetoothSocket) {
         activity.onConnectionAvailable(clientSocket)
     }
+
+    fun closeSocket(socket: BluetoothSocket?) {
+        try {
+            socket?.close()
+            Timber.i("T_Debug: closeSocket() >> Bluetooth socket closed")
+        }
+        catch(e: IOException) {
+            Timber.i("T_Debug: closeSocket() >> could not close the Bluetooth socket: $e.")
+        }
+
+    }
 }

@@ -31,11 +31,10 @@ class AudioRecorderUtils() {
     private val sampleRateInHz: Int = 44100
     private val channelConfig: Int = AudioFormat.CHANNEL_IN_MONO
     private val audioFormat: Int = AudioFormat.ENCODING_PCM_16BIT
-    private val bufferSizeInBytes: Int = 4096 //
+    private val bufferSizeInBytes: Int = 30000 //
     //AudioRecord.getMinBufferSize(sampleRateInHz,channelConfig,audioFormat) * 100
     private lateinit var recorder: AudioRecord
     private var isRecording: Boolean = false
-    var socket: BluetoothSocket? = null
 
     fun initAudioRecording() {
         recorder = AudioRecord(audioSource, sampleRateInHz, channelConfig, audioFormat, bufferSizeInBytes)
@@ -43,38 +42,30 @@ class AudioRecorderUtils() {
 
     /**
      * starts audio recording & transmits recording to remote peer
-     * @Param peerDevice, the connected peer object
+     * @Param socket, the already established Bluetooth socket.
      */
-    /**fun startRecording(socket: BluetoothSocket?) {
+    fun startRecording(socket: BluetoothSocket) {
         CoroutineScope(Dispatchers.IO).launch {
             val audioData: ByteArray = ByteArray(bufferSizeInBytes)
-            var validRemoteIP: Boolean = false
-            if (!isRecording && peerDevice.getRemoteIPAddressString() != "9.9.9.9") {
-                isRecording = true
-                validRemoteIP = true
-                Timber.i("T_Debug: startRecording() >> recording started.")
-                recorder.startRecording()
-                //we need to start transmitting this recording here
-            }
-            else Timber.i("T_Debug: startRecording() >> cannot start recording, " +
-                    "previous recording in progress or invalid remote IP.")
-            while (isRecording && validRemoteIP) {
+            isRecording = true
+            Timber.i("T_Debug: startRecording() >> recording started.")
+            recorder.startRecording()
+            while (isRecording) {
                /*read data from recorder into ByteArray, set the offset to 0. This overload method
                  supports 16 bit encoding */
                recorder.read(audioData, 0, audioData.size)
                //transmit array to remote peer, commonly accepted to use UDP to voice transmission
-                val udpSocket: DatagramSocket = DatagramSocket()
-                val udpPacket: DatagramPacket = DatagramPacket(audioData, audioData.size,
-                    peerDevice.getRemoteIPAddress(), 4540)
-                Timber.i("T_Debug: startRecording() >> transmitting audio packet to peer, " +
-                        "${peerDevice.getRemoteIPAddressString()}.")
-                try {udpSocket.send(udpPacket)}
+               Timber.i("T_Debug: startRecording() >> transmitting audio packet to peer, " +
+                        "${socket.remoteDevice.name}.")
+                try {
+                    socket.outputStream.write(audioData)
+                }
                 catch (e: IOException) {
                     Timber.i("T_Debug: startRecording() >> $e")
                 }
             }
         }
-    }**/
+    }
 
     private fun talkingStick() {
         TODO("Implement talking stick: only one device can transmit at a time")
@@ -90,7 +81,10 @@ class AudioRecorderUtils() {
     }
 
     /**
-     * Retrieves the received recording as a ByteArray and writes it to the devices' speakers.
+     * Retrieves the received recording from the Bluetooth socket and sends it to the speakers.
+     * Guidance taken from here:
+     * https://developer.android.com/guide/topics/connectivity/bluetooth/transfer-data
+     * @Param socket, the already established Bluetooth socket.
      */
     fun getRecording(socket: BluetoothSocket) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -112,21 +106,21 @@ class AudioRecorderUtils() {
                 audioAttributes, audioFormat, bufferSizeInBytes,
                 AudioTrack.MODE_STREAM, 1
             )
-            recording.play()
-
-            val udpSocket: DatagramSocket = DatagramSocket(null)
-            udpSocket.reuseAddress = true
-            udpSocket.bind(InetSocketAddress(4540))
-            while (!isRecording) {
-                val udpPacket: DatagramPacket = DatagramPacket(audioData, audioData.size)
-                try {udpSocket.receive(udpPacket)}
-                catch (e: IOException) {
-                    Timber.i("T_Debug: startRecording() >> $e")
+            if (socket.isConnected) {
+                recording.play()
+                while (!isRecording) {
+                    try {
+                        socket.inputStream.read(audioData)
+                    }
+                    catch (e: IOException) {
+                        Timber.i("T_Debug: startRecording() >> $e")
+                    }
+                    Timber.i("T_Debug: getRecording() >> playing audio received from ${socket.remoteDevice.name}.")
+                    recording.write(audioData, 0, audioData.size)
                 }
-                audioData = udpPacket.data
-                var remoteAddress: String = udpPacket.address.toString().substring(1)
-                Timber.i("T_Debug: getRecording() >> playing audio received from $remoteAddress.")
-                recording.write(audioData, 0, audioData.size)
+            }
+            else {
+                recording.stop()
             }
         }
     }
