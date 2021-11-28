@@ -188,7 +188,7 @@ class MainActivity : AppCompatActivity() {
             CoroutineScope(Dispatchers.Default).async {
                 peerDevice?.handleConnection()
                 /*
-                  delay() = hack to delay job enough to get network details before changing
+                  delay() = delay job enough to get network details before changing
                   context before doing this, 'all jobs finished' log would always trigger
                   before handleConnection() finished, which would lead to an error. Not got
                   to grips with how to fix this properly. Perhaps adding another await()?

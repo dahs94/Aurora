@@ -74,10 +74,6 @@ class AudioRecorderUtils() {
         }
     }
 
-    private fun talkingStick() {
-        TODO("Implement talking stick: only one device can transmit at a time")
-    }
-
     fun stopRecording(){
         if (isRecording) {
             Timber.i("T_Debug: stopRecording() >> recording stopped.")
