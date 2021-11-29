@@ -103,7 +103,7 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
             }
             val port: Int = 4540
             val socket: Socket = Socket(remoteIPAddress, port)
-            val message = "capuchin"
+            val message = "Address discovery IP"
             try {
                 Timber.i("T_Debug: transmitClientIP() >> sending '$message' " +
                         "to peer device (GO) with connection details.")
