@@ -89,7 +89,6 @@ class AudioRecorderUtils() {
     fun getRecording(socket: BluetoothSocket) {
         CoroutineScope(Dispatchers.IO).launch {
             Timber.i("T_Debug: getRecording() >> listening for audio from remote peer...")
-            var audioData: ByteArray = ByteArray(bufferSizeInBytes)
             val audioAttributesBuilder: AudioAttributes.Builder = AudioAttributes.Builder()
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                 .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
@@ -107,8 +106,8 @@ class AudioRecorderUtils() {
                 AudioTrack.MODE_STREAM, 1
             )
             if (socket.isConnected) {
-                recording.play()
                 while (!isRecording) {
+                    var audioData: ByteArray = ByteArray(bufferSizeInBytes)
                     try {
                         socket.inputStream.read(audioData)
                     }
@@ -117,6 +116,7 @@ class AudioRecorderUtils() {
                     }
                     Timber.i("T_Debug: getRecording() >> playing audio received from ${socket.remoteDevice.name}.")
                     recording.write(audioData, 0, audioData.size)
+                    recording.play()
                 }
             }
             else {
