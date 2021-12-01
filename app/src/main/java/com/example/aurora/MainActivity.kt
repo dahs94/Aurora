@@ -17,7 +17,6 @@ import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
 import timber.log.Timber
 
-
 class MainActivity : AppCompatActivity() {
 
     private lateinit var bluetoothUtils: BluetoothUtils
