@@ -20,6 +20,9 @@ import timber.log.Timber
  * when a message is received on the device or when incoming calls are received, or when
  * a device goes to airplane mode, etc. Broadcast Receivers are used to respond to these
  * system-wide events
+ *
+ * Template for this class provided by Android documentation, please see here:
+ * https://developer.android.com/guide/topics/connectivity/wifip2p
  */
 class WiFiDirectBroadcastReceiver(
     private val wManager: WifiP2pManager,

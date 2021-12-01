@@ -29,6 +29,10 @@ class WiFiDirectUtils(
     lateinit var wReceiver: BroadcastReceiver
     val intentFilter: IntentFilter = IntentFilter()
 
+    /**
+     Android WifiP2p documentation followed in the creation of this class:
+     https://developer.android.com/guide/topics/connectivity/wifip2p
+    **/
     fun initWiFiDirect() {
         wManager = context.applicationContext.getSystemService(WIFI_P2P_SERVICE) as WifiP2pManager
         wChannel = wManager.initialize(context,context.mainLooper, null)
