@@ -131,11 +131,8 @@ class PeerDevice(private val groupInfo: WifiP2pInfo) {
             try {
                 val clientTransmission = socket.accept()
                 remoteIPAddress = clientTransmission.inetAddress
-                var inputStream: InputStream = clientTransmission.getInputStream()
-                var message: String =
-                    BufferedReader(InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"))
                 Timber.i("T_Debug: receiveClientIP() >> " +
-                        "$message " +
+                        "Address discovery IP" +
                         "received from client. Client IP is " +
                         remoteIPAddress.toString().substring(1) +
                         ", my IP address is 192.168.49.1.") //group owner address is always the same.
